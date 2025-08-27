@@ -23,7 +23,7 @@ class ExecutionContext:
     
     def join_named(
         self,
-        name_to_parent: Dict[str, str],           # e.g. {"x": task1_id, "y": task2_id}
+        name_to_parent: Dict[str, str], # would look like {"x": task1_id, "y": task2_id}
         *,
         spec: str | Callable[..., Any],
         extra_inputs: Optional[Dict[str, Any]] = None,
@@ -48,7 +48,13 @@ class ExecutionContext:
         return join_id
 
     #creates a PlanDiff and puts it on the control queue. returns the UUID of the newly spawned task instance
-    def spawn(self, task: str | Callable[..., Any], *, inputs: Dict[str, Any], labels: Set[str] | None = None) -> str:
+    def spawn(
+            self, 
+            task: str | Callable[..., Any], 
+            *, 
+            inputs: Dict[str, Any], 
+            labels: Set[str] | None = None
+        ) -> str:
         spec_name = task if isinstance(task, str) else task.__name__
         #this is where new UUID's are generated
         child_id = str(uuid.uuid4())
@@ -88,12 +94,12 @@ class ExecutionContext:
         reduce_id: Optional[str] = None
         if reduce_spec is not None:
             reduce_id = str(uuid.uuid4())
-            # Special marker: orchestrator will gather outputs into parts when scheduling
+            # gather from makes it so orchestrator will gather outputs into parts when scheduling
             new_nodes.append(NewNode(id=reduce_id, spec_name=reduce_spec, inputs={"__gather_from__": map_ids}, parent_id=self.me_id))
             for mid in map_ids:
                 new_edges.append((mid, reduce_id))
 
-        # Group-scoped promises (global scope, but they only act on nodes with this label)
+        # group-scoped promises (global scope, but they only act on nodes with this label)
         new_promises: List[ScopedConstraint] = [
             ScopedConstraint(MapOnly(label=gid, fn=map_spec), GlobalScope()),
         ]

@@ -40,7 +40,7 @@ def scope_applies(scope: Scope, diff: PlanDiff) -> bool:
         return scope.owner_id == diff.emitter_id
     return False
 
-# Concrete constraints
+# concrete constraints
 
 @dataclass(frozen=True, slots=True)
 class OnlySpecificNodesAllowed:
@@ -74,7 +74,7 @@ class MapOnly:
     label: str
     fn: str  # allowed map function spec name
     def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
-        #what is self.label in n.labels doing here? Second check makes sense
+        #self.label in n.labels makes it so only promises with this label are checked
         bad = [n.spec_name for n in diff.new_nodes if (self.label in n.labels) and (n.spec_name != self.fn)] 
         return [SimpleViolation("MapOnly", {"label": self.label, "bad_nodes": bad})] if bad else []
 
@@ -83,5 +83,5 @@ class MaxParallelism:
     label: str  # enforce cap among nodes carrying this label
     k: int
     def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
-        # Enforced by the scheduler at start time; nothing to validate at diff-apply time.
+        # this can be handled by orchestrator, nothing to validate at diff-apply time
         return []

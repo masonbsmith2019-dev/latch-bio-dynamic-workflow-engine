@@ -34,17 +34,16 @@ class Orchestrator:
     
     def run_to_completion(self, root_id: str) -> None:
         while True:
-            # 1) schedule ready tasks
+            # schedule ready tasks
             for tid, node in list(self.plan.nodes.items()):
                 if node.status == "pending" and self._deps_done(tid):
                     if self._can_start_due_to_parallelism(node):
                         self._start_task(node)
                     # else: leave pending; will retry next tick
 
-            # 2) handle control queue
             self._drain_ctrl_queue()
 
-            # 3) exit when all tasks are terminal and no processes alive
+            # exit when all tasks are terminal and no processes alive
             if self._all_terminal() and not any(p.is_alive() for p in self._pool.values()):
                 self.events.write({"type": "WorkflowCompleted", "wf_root": root_id})
                 break
@@ -166,7 +165,7 @@ class Orchestrator:
 
         if write_png:
             rendered = False
-            # Option A: python-graphviz
+            # try python-graphviz
             try:
                 from graphviz import Source
                 src = Source(dot_str, filename=os.path.splitext(os.path.basename(dot_path))[0],
@@ -174,7 +173,7 @@ class Orchestrator:
                 src.render(cleanup=True)
                 rendered = True
             except Exception as e:
-                # Option B: call dot directly if available
+                # call dot directly if available
                 try:
                     import shutil, subprocess
                     dot_bin = shutil.which("dot")
