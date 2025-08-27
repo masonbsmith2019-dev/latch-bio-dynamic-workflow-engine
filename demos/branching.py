@@ -44,7 +44,7 @@ def nonpositive(ctx: ExecutionContext, n: int) -> dict:
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY)
     # change to negative num to exercise the other branch
-    root = orc.start(entry="CheckNumber", inputs={"n": -1})
+    root = orc.start(entry="CheckNumber", inputs={"n": -1}, output_path="outputs/branching.dot")
     orc.run_to_completion(root)
-    orc.export_dot("outputs/branching.dot")
+    #orc.export_dot()
     print("Branching demo complete. See outputs/branching.dot and outputs/events.jsonl")

@@ -21,7 +21,9 @@ class Orchestrator:
         self._pool: Dict[str, mp.Process] = {}
         self._ctrl_q: mp.Queue = mp.Queue()
     
-    def start(self, entry: str | Callable[..., Any], inputs: Dict[str, Any]) -> str:
+    def start(self, entry: str | Callable[..., Any], inputs: Dict[str, Any], output_path: str) -> str:
+        self._output_path = output_path
+        self._dots_created = 0
         spec_name = entry if isinstance(entry, str) else entry.__name__
         if not self.registry.exists(spec_name):
             raise ValueError(f"Entry task '{spec_name}' is not registered")
@@ -106,6 +108,8 @@ class Orchestrator:
                 node.status = "success"
                 node.ended_at = time.time()
                 self.events.write({"type": "TaskCompleted", "id": tid, "spec": node.spec_name})
+                #add dot creation here
+                self.export_dot()
 
     def _handle_plandiff(self, diff: PlanDiff) -> None:
         violations: List[SimpleViolation] = []
@@ -146,13 +150,16 @@ class Orchestrator:
         for a, b in diff.new_edges:
             self.plan.edges.add((a, b))
             self.events.write({"type": "EdgeCreated", "from": a, "to": b, "from_spec": self.plan.spec_of(a), "to_spec": self.plan.spec_of(b)})
+        self.export_dot()
 
-    def export_dot(self, base_path: str, write_png: bool = True) -> tuple[str, Optional[str]]:
-        os.makedirs(os.path.dirname(base_path) or ".", exist_ok=True)
+    def export_dot(self, write_png: bool = True) -> tuple[str, Optional[str]]:
+        os.makedirs(os.path.dirname(self._output_path) or ".", exist_ok=True)
 
         # normalize base path to a .dot path
-        dot_path = base_path if base_path.endswith(".dot") else base_path + ".dot"
-        png_path = os.path.splitext(dot_path)[0] + ".png" if write_png else None
+        output_path_no_file_type, _ = os.path.splitext(self._output_path)
+        dot_path = output_path_no_file_type + str(self._dots_created) + ".dot"
+        png_path = (os.path.splitext(dot_path)[0]) if write_png else None
+        self._dots_created += 1
 
         lines = ["digraph G {", "rankdir=LR;"]
         for node in self.plan.nodes.values():
@@ -179,8 +186,9 @@ class Orchestrator:
             # try python-graphviz
             try:
                 from graphviz import Source
-                src = Source(dot_str, filename=os.path.splitext(os.path.basename(dot_path))[0],
-                            format="png", directory=os.path.dirname(dot_path) or ".")
+                png_debug = os.path.dirname(dot_path)
+                src = Source(dot_str, filename=png_path,
+                            format="png", directory="pngs")
                 src.render(cleanup=True)
                 rendered = True
             except Exception as e:

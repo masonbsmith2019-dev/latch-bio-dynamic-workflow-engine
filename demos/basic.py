@@ -40,5 +40,3 @@ if __name__ == "__main__":
     orc.run_to_completion(root)
     dot_path, png_path = orc.export_dot("outputs/static_dag", write_png=True)
     print("Static DAG complete.")
-    print("DOT:", dot_path)
-    print("PNG:", png_path or "PNG not generated")
