@@ -1,13 +1,18 @@
-{"type": "NodeCreated", "id": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "spec": "CheckNumber", "ts": "2025-08-27T14:27:00.388Z"}
-{"type": "WorkflowStarted", "wf_root": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "entry_spec": "CheckNumber", "ts": "2025-08-27T14:27:00.388Z"}
-{"type": "TaskStarted", "id": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "spec": "CheckNumber", "ts": "2025-08-27T14:27:00.390Z"}
-{"type": "PromiseDeclared", "owner": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "scope": "OwnerDescendantsScope", "constraint": "OnlySpecificNodesAllowed", "params": {"allowed": ["NonPositive", "Positive"]}, "ts": "2025-08-27T14:27:00.667Z"}
-{"type": "PromiseDeclared", "owner": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "scope": "OwnerDescendantsScope", "constraint": "OnlySpecificEdgesAllowed", "params": {"allowed_spec_pairs": [["CheckNumber", "NonPositive"], ["CheckNumber", "Positive"]]}, "ts": "2025-08-27T14:27:00.668Z"}
-{"type": "TaskLog", "task_id": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "msg": "checking", "n": -1, "ts": "2025-08-27T14:27:00.669Z"}
-{"type": "NodeCreated", "id": "09e1f525-22d7-4121-b876-3a8574a2f0d6", "spec": "NonPositive", "parent_id": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "labels": [], "ts": "2025-08-27T14:27:00.672Z"}
-{"type": "EdgeCreated", "from": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "to": "09e1f525-22d7-4121-b876-3a8574a2f0d6", "from_spec": "CheckNumber", "to_spec": "NonPositive", "ts": "2025-08-27T14:27:00.673Z"}
-{"type": "TaskCompleted", "id": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "spec": "CheckNumber", "ts": "2025-08-27T14:27:00.674Z"}
-{"type": "TaskStarted", "id": "09e1f525-22d7-4121-b876-3a8574a2f0d6", "spec": "NonPositive", "ts": "2025-08-27T14:27:00.686Z"}
-{"type": "TaskLog", "task_id": "09e1f525-22d7-4121-b876-3a8574a2f0d6", "msg": "nonpositive", "n": -1, "ts": "2025-08-27T14:27:00.882Z"}
-{"type": "TaskCompleted", "id": "09e1f525-22d7-4121-b876-3a8574a2f0d6", "spec": "NonPositive", "ts": "2025-08-27T14:27:00.935Z"}
-{"type": "WorkflowCompleted", "wf_root": "80de1f91-b6c0-49c3-b3ab-b4606ebc112f", "ts": "2025-08-27T14:27:00.947Z"}
+{"type": "NodeCreated", "id": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "spec": "my_workflow", "ts": "2025-08-27T16:19:17.558Z"}
+{"type": "WorkflowStarted", "wf_root": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "entry_spec": "my_workflow", "ts": "2025-08-27T16:19:17.558Z"}
+{"type": "TaskStarted", "id": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "spec": "my_workflow", "ts": "2025-08-27T16:19:17.560Z"}
+{"type": "NodeCreated", "id": "9ac311aa-1ffa-4228-a653-d6bd59675dfb", "spec": "task_1", "parent_id": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "labels": [], "ts": "2025-08-27T16:19:17.793Z"}
+{"type": "EdgeCreated", "from": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "to": "9ac311aa-1ffa-4228-a653-d6bd59675dfb", "from_spec": "my_workflow", "to_spec": "task_1", "ts": "2025-08-27T16:19:17.793Z"}
+{"type": "NodeCreated", "id": "5369cbe4-32dc-41ca-be9a-b05d926fa548", "spec": "task_2", "parent_id": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "labels": [], "ts": "2025-08-27T16:19:17.795Z"}
+{"type": "EdgeCreated", "from": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "to": "5369cbe4-32dc-41ca-be9a-b05d926fa548", "from_spec": "my_workflow", "to_spec": "task_2", "ts": "2025-08-27T16:19:17.795Z"}
+{"type": "NodeCreated", "id": "d8ba51b3-6006-4165-959f-7bbd6eaceb37", "spec": "task_3", "parent_id": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "labels": [], "ts": "2025-08-27T16:19:17.797Z"}
+{"type": "EdgeCreated", "from": "9ac311aa-1ffa-4228-a653-d6bd59675dfb", "to": "d8ba51b3-6006-4165-959f-7bbd6eaceb37", "from_spec": "task_1", "to_spec": "task_3", "ts": "2025-08-27T16:19:17.797Z"}
+{"type": "EdgeCreated", "from": "5369cbe4-32dc-41ca-be9a-b05d926fa548", "to": "d8ba51b3-6006-4165-959f-7bbd6eaceb37", "from_spec": "task_2", "to_spec": "task_3", "ts": "2025-08-27T16:19:17.799Z"}
+{"type": "TaskCompleted", "id": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "spec": "my_workflow", "ts": "2025-08-27T16:19:17.801Z"}
+{"type": "TaskStarted", "id": "9ac311aa-1ffa-4228-a653-d6bd59675dfb", "spec": "task_1", "ts": "2025-08-27T16:19:17.813Z"}
+{"type": "TaskStarted", "id": "5369cbe4-32dc-41ca-be9a-b05d926fa548", "spec": "task_2", "ts": "2025-08-27T16:19:17.867Z"}
+{"type": "TaskCompleted", "id": "9ac311aa-1ffa-4228-a653-d6bd59675dfb", "spec": "task_1", "ts": "2025-08-27T16:19:18.105Z"}
+{"type": "TaskCompleted", "id": "5369cbe4-32dc-41ca-be9a-b05d926fa548", "spec": "task_2", "ts": "2025-08-27T16:19:18.138Z"}
+{"type": "TaskStarted", "id": "d8ba51b3-6006-4165-959f-7bbd6eaceb37", "spec": "task_3", "ts": "2025-08-27T16:19:18.149Z"}
+{"type": "TaskCompleted", "id": "d8ba51b3-6006-4165-959f-7bbd6eaceb37", "spec": "task_3", "ts": "2025-08-27T16:19:18.385Z"}
+{"type": "WorkflowCompleted", "wf_root": "b178f55c-332e-4e2f-92cb-e5ae372a9a4f", "ts": "2025-08-27T16:19:18.396Z"}

@@ -9,7 +9,7 @@ from dataclasses import dataclass, field, asdict, is_dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
 from plan import PlanDiff, Plan, TaskInstance
 from task_registry import TaskRegistry, _REGISTRY
-from promise import SimpleViolation, scope_applies
+from promise import SimpleViolation, MaxParallelism, scope_applies
 from event_system import EventWriter
 from execution_context import ExecutionContext
 
@@ -55,8 +55,19 @@ class Orchestrator:
 
     def _can_start_due_to_parallelism(self, node: TaskInstance) -> bool:
         #to do, check that number running < active_cap
-        # should TaskInstance have a set of labels or just one? When would multiple be necessary?
-        return True
+        # for each MaxParallelism(label=k), ensure running nodes with that label < k
+        active_caps: List[Tuple[str, int]] = []
+        for sc in self.plan.promises:
+            if isinstance(sc.constraint, MaxParallelism):
+                if sc.constraint.label in node.labels:
+                    active_caps.append((sc.constraint.label, sc.constraint.k))
+        if not active_caps:
+            return True
+        min_k = min(k for _, k in active_caps)
+        # assume one label per group in this POC
+        label = active_caps[0][0]
+        running = sum(1 for n in self.plan.nodes.values() if (n.status == "running" and (label in n.labels)))
+        return running < min_k
 
     def _start_task(self, node: TaskInstance) -> None:
         # If reduce node with gather marker, materialize its inputs now (all preds have completed)
