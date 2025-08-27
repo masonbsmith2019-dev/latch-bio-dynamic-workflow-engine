@@ -53,11 +53,20 @@ class OnlySpecificNodesAllowed:
 class OnlySpecificEdgesAllowed:
     allowed_spec_pairs: Set[Tuple[str, str]]  # (from_spec, to_spec)
     def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
+        # Build an overlay: known nodes in the plan + nodes introduced by this diff
+        overlay: Dict[str, str] = {nid: ti.spec_name for nid, ti in plan.nodes.items()}
+        overlay.update({n.id: n.spec_name for n in diff.new_nodes})
+
         bad: List[Dict[str, str]] = []
         for a, b in diff.new_edges:
-            pair = (plan.spec_of(a), plan.spec_of(b))
-            if pair not in self.allowed_spec_pairs:
-                bad.append({"from": pair[0], "to": pair[1]})
+            from_spec = overlay.get(a)
+            to_spec   = overlay.get(b)
+            if from_spec is None or to_spec is None:
+                bad.append({"from": str(a), "to": str(b), "reason": "unknown_node_in_diff"})
+                continue
+            if (from_spec, to_spec) not in self.allowed_spec_pairs:
+                bad.append({"from": from_spec, "to": to_spec})
+
         return [SimpleViolation("OnlySpecificEdgesAllowed", {"bad_edges": bad})] if bad else []
     
 @dataclass(frozen=True, slots=True)

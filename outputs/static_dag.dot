@@ -1,0 +1,11 @@
+digraph G {
+rankdir=LR;
+  "bd28fa45-b6ea-4ce2-9589-a177d74f6f03" [label="my_workflow\nbd28fa", style=filled];
+  "0ad9160d-dcf8-43a0-ba5a-c310ca43ba90" [label="task_1\n0ad916", style=filled];
+  "01a0c3b3-3bbc-4aed-a321-11457cbd0d6a" [label="task_2\n01a0c3", style=filled];
+  "c63b6478-da5b-4235-92e8-e2736af2c28c" [label="task_3\nc63b64", style=filled];
+  "bd28fa45-b6ea-4ce2-9589-a177d74f6f03" -> "01a0c3b3-3bbc-4aed-a321-11457cbd0d6a";
+  "01a0c3b3-3bbc-4aed-a321-11457cbd0d6a" -> "c63b6478-da5b-4235-92e8-e2736af2c28c";
+  "0ad9160d-dcf8-43a0-ba5a-c310ca43ba90" -> "c63b6478-da5b-4235-92e8-e2736af2c28c";
+  "bd28fa45-b6ea-4ce2-9589-a177d74f6f03" -> "0ad9160d-dcf8-43a0-ba5a-c310ca43ba90";
+}

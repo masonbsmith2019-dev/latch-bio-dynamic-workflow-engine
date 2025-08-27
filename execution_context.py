@@ -20,6 +20,32 @@ class ExecutionContext:
     def __init__(self, control_q: mp.Queue, me_id: str):
         self._q = control_q
         self.me_id = me_id
+    
+    def join_named(
+        self,
+        name_to_parent: Dict[str, str],           # e.g. {"x": task1_id, "y": task2_id}
+        *,
+        spec: str | Callable[..., Any],
+        extra_inputs: Optional[Dict[str, Any]] = None,
+        labels: Optional[Set[str]] = None,
+    ) -> str:
+        """Create a node that depends on the parents and receives their outputs as named args."""
+        spec_name = spec if isinstance(spec, str) else spec.__name__
+        join_id = str(uuid.uuid4())
+        nn = NewNode(
+            id=join_id,
+            spec_name=spec_name,
+            inputs={"__gather_from_named__": dict(name_to_parent), **(extra_inputs or {})},
+            parent_id=self.me_id,
+            labels=labels or set(),
+        )
+        diff = PlanDiff(
+            emitter_id=self.me_id,
+            new_nodes=[nn],
+            new_edges=[(pid, join_id) for pid in name_to_parent.values()],
+        )
+        self._q.put(("plandiff", diff))
+        return join_id
 
     #creates a PlanDiff and puts it on the control queue. returns the UUID of the newly spawned task instance
     def spawn(self, task: str | Callable[..., Any], *, inputs: Dict[str, Any], labels: Set[str] | None = None) -> str:

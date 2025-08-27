@@ -64,6 +64,12 @@ class Orchestrator:
         if "__gather_from__" in node.inputs:
             sources: List[str] = node.inputs.pop("__gather_from__")
             node.inputs["parts"] = [self.plan.nodes[s].outputs for s in sources]
+
+        if "__gather_from_named__" in node.inputs:
+            sources_map: Dict[str, str] = node.inputs.pop("__gather_from_named__")
+            for param_name, src_id in sources_map.items():
+                node.inputs[param_name] = self.plan.nodes[src_id].outputs
+
         node.status = "running"
         node.started_at = time.time()
         self.events.write({"type": "TaskStarted", "id": node.id, "spec": node.spec_name})
@@ -100,7 +106,7 @@ class Orchestrator:
             self.events.write({
                 "type": "ConstraintViolation",
                 "diff_emitter": diff.emitter_id,
-                "violations": [_params(v) for v in violations],
+                "violations": violations #[_params(v) for v in violations],
             })
             for node in self.plan.nodes.values():
                 if node.status in ("pending", "running"):
@@ -115,7 +121,7 @@ class Orchestrator:
                     "owner": getattr(sc.scope, "owner_id", None),
                     "scope": sc.scope.__class__.__name__,
                     "constraint": sc.constraint.__class__.__name__,
-                    "params": _params(sc.constraint),
+                    "params": sc.constraint, #should i use _params here?
                 })
 
         for n in diff.new_nodes:
@@ -131,9 +137,64 @@ class Orchestrator:
             self.plan.edges.add((a, b))
             self.events.write({"type": "EdgeCreated", "from": a, "to": b, "from_spec": self.plan.spec_of(a), "to_spec": self.plan.spec_of(b)})
 
-    def export_dot(self, path: str) -> None:
-        #Iterates through plan.nodes and plan.edges to create graphviz visual. Change line styling based on each node’s status
-        pass
+    def export_dot(self, base_path: str, write_png: bool = True) -> tuple[str, Optional[str]]:
+        os.makedirs(os.path.dirname(base_path) or ".", exist_ok=True)
+
+        # normalize base path to a .dot path
+        dot_path = base_path if base_path.endswith(".dot") else base_path + ".dot"
+        png_path = os.path.splitext(dot_path)[0] + ".png" if write_png else None
+
+        lines = ["digraph G {", "rankdir=LR;"]
+        for node in self.plan.nodes.values():
+            label = f"{node.spec_name}\\n{node.id[:6]}"
+            style = ""
+            if node.status == "running":
+                style = ", shape=doublecircle"
+            elif node.status == "success":
+                style = ", style=filled"
+            elif node.status in ("failed", "terminated"):
+                style = ", color=red"
+            lines.append(f'  "{node.id}" [label="{label}"{style}];')
+        for a, b in self.plan.edges:
+            lines.append(f'  "{a}" -> "{b}";')
+        lines.append("}")
+        dot_str = "\n".join(lines)
+
+        # write .dot
+        with open(dot_path, "w", encoding="utf-8") as f:
+            f.write(dot_str)
+
+        if write_png:
+            rendered = False
+            # Option A: python-graphviz
+            try:
+                from graphviz import Source
+                src = Source(dot_str, filename=os.path.splitext(os.path.basename(dot_path))[0],
+                            format="png", directory=os.path.dirname(dot_path) or ".")
+                src.render(cleanup=True)
+                rendered = True
+            except Exception as e:
+                # Option B: call dot directly if available
+                try:
+                    import shutil, subprocess
+                    dot_bin = shutil.which("dot")
+                    if dot_bin:
+                        subprocess.run([dot_bin, "-Tpng", dot_path, "-o", png_path], check=True)
+                        rendered = True
+                except Exception as e2:
+                    # fall through to warning
+                    pass
+
+            if not rendered:
+                self.events.write({
+                    "type": "ExportWarning",
+                    "warning": "Graphviz not available; PNG not written",
+                    "dot_path": dot_path,
+                })
+                png_path = None
+
+        return dot_path, png_path
+
 
     def _all_terminal(self) -> bool:
         return all(n.status in ("success", "failed", "terminated") for n in self.plan.nodes.values())

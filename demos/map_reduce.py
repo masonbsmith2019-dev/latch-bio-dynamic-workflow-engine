@@ -1,12 +1,13 @@
 from __future__ import annotations
-import json
 import os
-import queue
+import sys
 import time
-import uuid
-import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
+
+# Add parent directory to path to import project modules
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 from task_registry import task, _REGISTRY
 from execution_context import ExecutionContext
 from orchestrator import Orchestrator
