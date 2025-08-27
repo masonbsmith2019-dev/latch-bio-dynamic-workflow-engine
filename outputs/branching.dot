@@ -1,6 +1,0 @@
-digraph G {
-rankdir=LR;
-  "abfe2f6f-1455-46b4-a5c8-74bc1c6c4810" [label="CheckNumber\nabfe2f", style=filled];
-  "bdae6308-875a-4c1a-b269-9df7efce56d5" [label="NonPositive\nbdae63", style=filled];
-  "abfe2f6f-1455-46b4-a5c8-74bc1c6c4810" -> "bdae6308-875a-4c1a-b269-9df7efce56d5";
-}
