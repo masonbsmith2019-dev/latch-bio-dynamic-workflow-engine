@@ -1,9 +1,16 @@
 from __future__ import annotations
 import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
+from typing import Any, Callable, Dict, List, Literal, Protocol, Iterable
 from plan import Plan, PlanDiff, Edge
+from task_registry import spec_name_from_callable
 from uuid import UUID
+
+def _overlay_specs(plan: Plan, diff: PlanDiff) -> dict[UUID, str]:
+    # plan nodes + nodes introduced in this diff
+    ov: dict[UUID, str] = {nid: ti.spec_name for nid, ti in plan.taskInstances.items()}
+    ov.update({n.id: n.spec_name for n in diff.new_nodes})
+    return ov
 
 class Violation(Protocol):
     type: str
@@ -45,18 +52,40 @@ def scope_applies(scope: Scope, diff: PlanDiff) -> bool:
 
 @dataclass(frozen=True, slots=True)
 class OnlySpecificNodesAllowed:
-    allowed: set[str] #the new nodes specified by the 
+    allowed_specs: tuple[str, ...] #the new nodes specified by the 
+    
+    def __init__(self, allowed: Iterable[Callable]):
+        names: list[str] = []
+        for x in allowed:
+            if not callable(x):
+                raise TypeError(f"OnlySpecificNodesAllowed expects callables; got {type(x).__name__}")
+            names.append(spec_name_from_callable(x))
+        object.__setattr__(self, "allowed_specs", tuple(names))
+
     def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
-        bad = [n.spec_name for n in diff.new_nodes if n.spec_name not in self.allowed]
-        return [SimpleViolation("OnlySpecificNodesAllowed", {"bad_nodes": bad})] if bad else []
+        allowed = set(self.allowed_specs)
+        bad = [n.spec_name for n in diff.new_nodes if n.spec_name not in allowed]
+        return [] if not bad else [SimpleViolation("OnlySpecificNodesAllowed", {"bad_nodes": bad})]
 
 @dataclass(frozen=True, slots=True)
 class OnlySpecificEdgesAllowed:
-    allowed_spec_pairs: set[tuple[str, str]]  # (from_spec, to_spec)
+    allowed_spec_pairs: tuple[tuple[str, str], ...]  # (from_spec, to_spec)
+
+    def __init__(self, pairs: Iterable[tuple[Callable, Callable]]):
+        norm: list[tuple[str, str]] = []
+        for pair in pairs:
+            if not (isinstance(pair, tuple) and len(pair) == 2):
+                raise TypeError("OnlySpecificEdgesAllowed expects an iterable of 2-tuples of callables")
+            a, b = pair
+            if not callable(a) or not callable(b):
+                raise TypeError(f"OnlySpecificEdgesAllowed expects callables; got {type(a).__name__}, {type(b).__name__}")
+            norm.append((spec_name_from_callable(a), spec_name_from_callable(b)))
+        object.__setattr__(self, "allowed_spec_pairs", tuple(norm))
+
     def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]: #should change to true/false and emit violations?
         # Build an overlay: known nodes in the plan + nodes introduced by this diff
-        overlay: dict[UUID, str] = {nid: ti.spec_name for nid, ti in plan.taskInstances.items()}
-        overlay.update({n.id: n.spec_name for n in diff.new_nodes})
+        overlay = _overlay_specs(plan, diff)
+        allowed = set(self.allowed_spec_pairs)
 
         bad: list[dict[str, str]] = []
         for new_edge in diff.new_edges:
@@ -70,18 +99,8 @@ class OnlySpecificEdgesAllowed:
             #unallowed edge
             if (from_spec, to_spec) not in self.allowed_spec_pairs:
                 bad.append({"from": from_spec, "to": to_spec})
-
-        return [SimpleViolation("OnlySpecificEdgesAllowed", {"bad_edges": bad})] if bad else []
+        return [] if not bad else [SimpleViolation("OnlySpecificEdgesAllowed", {"bad_edges": bad})]
     
-@dataclass(frozen=True, slots=True)
-class MapOnly:
-    label: str
-    fn: str  # allowed map function spec name
-    def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
-        #self.label in n.labels makes it so only promises with this label are checked
-        bad = [n.spec_name for n in diff.new_nodes if (self.label in n.labels) and (n.spec_name != self.fn)] 
-        return [SimpleViolation("MapOnly", {"label": self.label, "bad_nodes": bad})] if bad else []
-
 @dataclass(frozen=True, slots=True)
 class MaxParallelism:
     label: str  # enforce cap among nodes carrying this label

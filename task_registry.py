@@ -1,7 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Callable, List, Optional
-from promise import ScopedConstraint
+from typing import Any, Callable
+# from promise import ScopedConstraint
+
+def spec_name_from_callable(fn: Callable) -> str:
+    # @task decorator should have set __task_spec__; fall back to __name__
+    return getattr(fn, "__task_spec__", fn.__name__)
 
 @dataclass(frozen=True, slots=True)
 class TaskSpec:
@@ -9,7 +13,7 @@ class TaskSpec:
     fn: Callable
     input_schema: Any | None = None
     output_schema: Any | None = None
-    default_promises: list["ScopedConstraint"] = field(default_factory=list)
+    # default_promises: list["ScopedConstraint"] = field(default_factory=list)
 
 class TaskRegistry:
     def __init__(self):
@@ -26,14 +30,16 @@ class TaskRegistry:
     def exists(self, name: str) -> bool:
         return name in self._specs
 
-    def names(self) -> List[str]:
+    def names(self) -> list[str]:
         return list(self._specs.keys())
     
 _REGISTRY = TaskRegistry()
     
-def task(name: Optional[str] = None, **kwargs):
-    def deco(fn: Callable[..., Any]):
-        spec_name = name if name is not None else fn.__name__
-        _REGISTRY.add(TaskSpec(name=spec_name, fn=fn, **kwargs))
-        return fn
-    return deco
+def task(fn: Callable | None = None):
+    #infer spec name from fn.__name__, require callables
+    def register(f: Callable):
+        spec_name = f.__name__
+        setattr(f, "__task_spec__", spec_name)   # used by ctx.map/spawn
+        _REGISTRY.add(TaskSpec(name=spec_name, fn=f))
+        return f
+    return register if fn is None else register(fn)

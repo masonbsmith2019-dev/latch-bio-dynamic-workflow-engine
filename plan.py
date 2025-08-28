@@ -64,3 +64,9 @@ class PlanDiff:
     new_edges: list[Edge] = field(default_factory=list)
     new_promises: list["ScopedConstraint"] = field(default_factory=list)
     annotations: dict[str, Any] = field(default_factory=dict)
+
+@dataclass(frozen=True, slots=True)
+class From:
+    task_id: UUID
+    # optional: path inside the output if it’s a dict, e.g., "payload.value"
+    path: str | None = None

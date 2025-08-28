@@ -6,117 +6,94 @@ import time
 import uuid
 import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
-from plan import PlanDiff, NewNode, Edge
-from promise import GlobalScope, ScopedConstraint, MapOnly, MaxParallelism, Constraint, OwnerDescendantsScope, Scope
+from typing import Any, Callable, Optional
+from plan import PlanDiff, NewNode, Edge, From, Status
+from promise import GlobalScope, ScopedConstraint, MaxParallelism, Constraint, OwnerDescendantsScope, Scope
+from task_registry import _REGISTRY, spec_name_from_callable
+from uuid import UUID
+from inspect import signature, Parameter
 
 @dataclass(frozen=True, slots=True)
 class MapHandles:
-    map_ids: List[str]
+    map_ids: list[str]
     reduce_id: Optional[str]
     group_label: str
 
 class ExecutionContext:
-    def __init__(self, control_q: mp.Queue, me_id: str):
+    def __init__(self, control_q: mp.Queue, me_id: UUID, status_proxy=None, results_proxy=None):
         self._q = control_q
         self.me_id = me_id
-    
-    def join_named(
-        self,
-        name_to_parent: Dict[str, str], # would look like {"x": task1_id, "y": task2_id}
-        *,
-        spec: str | Callable[..., Any],
-        extra_inputs: Optional[Dict[str, Any]] = None,
-        labels: Optional[Set[str]] = None,
-    ) -> str:
-        """Create a node that depends on the parents and receives their outputs as named args."""
-        spec_name = spec if isinstance(spec, str) else spec.__name__
-        join_id = uuid.uuid4()
-        nn = NewNode(
-            id=join_id,
-            spec_name=spec_name,
-            inputs={"__gather_from_named__": dict(name_to_parent), **(extra_inputs or {})},
-            parent_id=self.me_id,
-            labels=labels or set(),
-        )
-        diff = PlanDiff(
-            emitter_id=self.me_id,
-            new_nodes=[nn],
-            new_edges=[Edge(pid, join_id) for pid in name_to_parent.values()],
-        )
-        self._q.put(("plandiff", diff))
-        return join_id
+        self._status = status_proxy      # mp.Manager().dict() proxy from orchestrator
+        self._results = results_proxy    # mp.Manager().dict() proxy from orchestrator
 
     #creates a PlanDiff and puts it on the control queue. returns the UUID of the newly spawned task instance
     def spawn(
             self, 
-            task: str | Callable[..., Any], 
+            fn: Callable, 
             *, 
-            inputs: Dict[str, Any], 
-            labels: Set[str] | None = None
+            inputs: dict[str, Any], 
+            labels: set[str] | None = None
         ) -> str:
-        spec_name = task if isinstance(task, str) else task.__name__
-        #this is where new UUID's are generated
+        spec_name = spec_name_from_callable(fn)
+        if not _REGISTRY.exists(spec_name):
+            raise ValueError(f"spawn target '{spec_name}' is not registered")
+
         child_id = uuid.uuid4()
-        diff = PlanDiff(
-            emitter_id=self.me_id,
-            new_nodes=[NewNode(id=child_id, spec_name=spec_name, inputs=inputs, parent_id=self.me_id, labels=labels or set())],
-            new_edges=[Edge(self.me_id, child_id)],
+
+        # Collect producer task_ids by scanning inputs for From(...)
+        producers: set[uuid.UUID] = set()
+        def collect(x: Any) -> None:
+            if isinstance(x, From):
+                producers.add(x.task_id)
+            elif isinstance(x, dict):
+                for v in x.values():
+                    collect(v)
+            elif isinstance(x, (list, tuple)):
+                for v in x:
+                    collect(v)
+
+        collect(inputs)
+
+        nn = NewNode(
+            id=child_id,
+            spec_name=spec_name,
+            inputs=inputs,
+            parent_id=self.me_id,
+            labels=set(labels or []),
         )
-        self._q.put(("plandiff", diff))
+
+        # Edges: (parent -> child) + (each producer -> child)
+        #edges = [Edge(self.me_id, child_id)] + [Edge(pid, child_id) for pid in producers]
+        edges = [Edge(pid, child_id) for pid in producers]
+
+        self._q.put(("plandiff", PlanDiff(
+            emitter_id=self.me_id,
+            new_nodes=[nn],
+            new_edges=edges,
+            new_promises=[],
+            annotations=None,
+        )))
         return child_id
     
-    def map(
-        self,
-        map_fn: str | Callable[..., Any],
-        items: List[Any],
-        *,
-        reduce: str | Callable[..., Any] | None = None,
-        max_parallel: Optional[int] = None,
-        group_label: Optional[str] = None,
-    ) -> MapHandles:
-        map_spec = map_fn if isinstance(map_fn, str) else map_fn.__name__
-        reduce_spec = reduce if (isinstance(reduce, str) or reduce is None) else reduce.__name__
-        #use group label if passed in, otherwise combine emitter task instance UUID and newly generated UUID 
-        gid = group_label or f"map:{self.me_id}:{uuid.uuid4().hex[:6]}"
-        new_nodes: list[NewNode] = []
-        new_edges: list[Edge] = []
-        map_ids: list[str] = []
+    def wait_for_all(self, ids: list[uuid.UUID], *, timeout: float | None = None, poll_ms: int = 10) -> list[Any]:
+        if self._status is None or self._results is None:
+            raise RuntimeError("wait_for_all requires status/results proxies from the orchestrator")
 
-        # create map clones
-        for it in items:
-            #this is line i'll want to change for argument flexibility
-            #specifically, letting reduce functions accept any variable name, instead of just item
-            inputs = it if isinstance(it, dict) else {"item": it}
-            cid = uuid.uuid4()
-            map_ids.append(cid)
-            new_nodes.append(NewNode(id=cid, spec_name=map_spec, inputs=inputs, parent_id=self.me_id, labels={gid}))
-            new_edges.append(Edge(self.me_id, cid))
+        terminals = {Status.SUCCESS, Status.FAILED, Status.TERMINATED}
+        remaining = set(ids)
+        deadline = (time.monotonic() + timeout) if timeout is not None else None
 
-        reduce_id: Optional[str] = None
-        if reduce_spec is not None:
-            reduce_id = uuid.uuid4()
-            # gather from makes it so orchestrator will gather outputs into parts when scheduling
-            new_nodes.append(NewNode(id=reduce_id, spec_name=reduce_spec, inputs={"__gather_from__": map_ids}, parent_id=self.me_id))
-            for mid in map_ids:
-                new_edges.append(Edge(mid, reduce_id))
+        while remaining:
+            done = [i for i in list(remaining) if self._status.get(i) in terminals]
+            for i in done:
+                remaining.remove(i)
+            if remaining:
+                if deadline is not None and time.monotonic() > deadline:
+                    raise TimeoutError(f"wait_for_all timed out; remaining={[str(r) for r in remaining]}")
+                time.sleep(poll_ms / 1000.0)
 
-        # group-scoped promises (global scope, but they only act on nodes with this label)
-        new_promises: List[ScopedConstraint] = [
-            ScopedConstraint(MapOnly(label=gid, fn=map_spec), GlobalScope()),
-        ]
-        if max_parallel is not None:
-            new_promises.append(ScopedConstraint(MaxParallelism(label=gid, k=max_parallel), GlobalScope()))
-
-        diff = PlanDiff(
-            emitter_id=self.me_id,
-            new_nodes=new_nodes,
-            new_edges=new_edges,
-            new_promises=new_promises,
-            annotations={"group_label": gid},
-        )
-        self._q.put(("plandiff", diff))
-        return MapHandles(map_ids=map_ids, reduce_id=reduce_id, group_label=gid)
+        # Return outputs in the same order as ids (may be None if task emitted None)
+        return [self._results.get(i) for i in ids]
 
     #confused on how scoping works
     def promise(self, *constraints: Constraint, scope: Scope | None = None) -> None:

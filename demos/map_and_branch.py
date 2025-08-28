@@ -16,40 +16,40 @@ from promise import OnlySpecificEdgesAllowed, OnlySpecificNodesAllowed
 from plan import Edge
 
 # reduce function: sum the squares
-@task(name="SumReduce")
+@task
 def sum_reduce(ctx: ExecutionContext, parts: List[int]) -> int:
     total = sum(parts)
     ctx.log("sum", total=total, count=len(parts))
     return total
 
 # parent function: create the map group
-@task(name="SquareOrCubeBatch")
+@task
 def square_batch(ctx: ExecutionContext, numbers: List[int]) -> None:
-    handles = ctx.map("CheckNumber", numbers, reduce="SumReduce", max_parallel=3, group_label="squares")
+    handles = ctx.map(check_number, numbers, reduce=sum_reduce, max_parallel=3, group_label="squares")
     ctx.emit({"group": handles.group_label, "count": len(handles.map_ids)})
 
-@task(name="CheckNumber")
+@task
 def check_number(ctx: ExecutionContext, n: int) -> None:
     ctx.promise(
-        OnlySpecificNodesAllowed({"Square", "Cube"}),
-        OnlySpecificEdgesAllowed({("CheckNumber", "Square"), ("CheckNumber", "Cube")}),
+        OnlySpecificNodesAllowed({square, cube}),
+        OnlySpecificEdgesAllowed({(check_number, square), (check_number, cube)}),
     )
     ctx.log("checking", n=n)
     if n > 0:
-        ctx.spawn("Square", inputs={"n": n})
-        ctx.emit({"decision": "square positive"})
+        ctx.spawn(square, inputs={"n": n})
+        ctx.log("decision", take="square")
     else:
-        ctx.spawn("Cube", inputs={"n": n})
+        ctx.spawn(cube, inputs={"n": n})
         ctx.emit({"decision": "cube non-positive"})
 
-@task(name="Square")
-def positive(ctx: ExecutionContext, n: int) -> dict:
+@task
+def square(ctx: ExecutionContext, n: int) -> dict:
     ctx.log("square positive", n=n)
     time.sleep(0.05)
     return n ** 2
 
-@task(name="Cube")
-def nonpositive(ctx: ExecutionContext, n: int) -> dict:
+@task
+def cube(ctx: ExecutionContext, n: int) -> dict:
     ctx.log("cube nonpositive", n=n)
     time.sleep(0.05)
     return n ** 3
@@ -57,6 +57,6 @@ def nonpositive(ctx: ExecutionContext, n: int) -> dict:
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY)
     numbers = list(range(-3, 4))  # -3,...,0,...,3
-    root = orc.start(entry="SquareOrCubeBatch", inputs={"numbers": numbers}, output_path=Path("outputs/map_and_branch"))
+    root = orc.start(entry=square_batch, inputs={"numbers": numbers}, output_path=Path("outputs/map_and_branch"))
     orc.run_to_completion(root)
     print("Run complete.")

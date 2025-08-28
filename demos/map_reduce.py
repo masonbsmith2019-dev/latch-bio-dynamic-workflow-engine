@@ -14,23 +14,23 @@ from execution_context import ExecutionContext
 from orchestrator import Orchestrator
 
 # map function: square a number
-@task(name="Square")
+@task
 def square(ctx: ExecutionContext, item: int) -> int:
     ctx.log("square", n=item)
     time.sleep(0.03 + (hash(item) % 10) * 0.002)  # tiny stagger
     return item * item
 
 # reduce function: sum the squares
-@task(name="SumReduce")
+@task
 def sum_reduce(ctx: ExecutionContext, parts: List[int]) -> int:
     total = sum(parts)
     ctx.log("sum", total=total, count=len(parts))
     return total
 
 # parent function: create the map group
-@task(name="SquareBatch")
+@task
 def square_batch(ctx: ExecutionContext, numbers: List[int]) -> None:
-    handles = ctx.map("Square", numbers, reduce="SumReduce", max_parallel=3, group_label="squares")
+    handles = ctx.map(square, numbers, reduce="SumReduce", max_parallel=3, group_label="squares")
     ctx.emit({"group": handles.group_label, "count": len(handles.map_ids)})
 
 if __name__ == "__main__":

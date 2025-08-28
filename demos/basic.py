@@ -7,23 +7,23 @@ from execution_context import ExecutionContext
 from orchestrator import Orchestrator
 from pathlib import Path
 
-@task(name="task_1")
+@task
 def task_1(ctx: ExecutionContext, a: int, b: int, c: int) -> int:
     time.sleep(0.02)
     return a + b + c
 
-@task(name="task_2")
+@task
 def task_2(ctx: ExecutionContext, m: int, n: int) -> int:
     time.sleep(0.02)
     return m * n
 
-@task(name="task_3")
+@task
 def task_3(ctx: ExecutionContext, x: int, y: int) -> int:
     time.sleep(0.02)
     return x - y
 
 # This is your “workflow” task: it wires a static DAG (A,B)->C.
-@task(name="my_workflow")
+@task
 def my_workflow(ctx: ExecutionContext, a: int, b: int, c: int, m: int, n: int) -> None:
     # Spawn the two independent producers
     t1 = ctx.spawn("task_1", inputs={"a": a, "b": b, "c": c})

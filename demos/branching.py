@@ -13,7 +13,7 @@ from plan import Edge
 from pathlib import Path
 
 
-@task(name="CheckNumber")
+@task
 def check_number(ctx: ExecutionContext, n: int) -> None:
     # Promise: this node may only spawn Positive or NonPositive
     ctx.promise(
@@ -29,14 +29,14 @@ def check_number(ctx: ExecutionContext, n: int) -> None:
         ctx.emit({"decision": "nonpositive"})
 
 
-@task(name="Positive")
+@task
 def positive(ctx: ExecutionContext, n: int) -> dict:
     ctx.log("positive", n=n)
     time.sleep(0.05)
     return {"n": n, "sign": "+"}
 
 
-@task(name="NonPositive")
+@task
 def nonpositive(ctx: ExecutionContext, n: int) -> dict:
     ctx.log("nonpositive", n=n)
     time.sleep(0.05)

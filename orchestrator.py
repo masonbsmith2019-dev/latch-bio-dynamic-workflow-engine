@@ -7,13 +7,14 @@ import uuid
 import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
-from plan import PlanDiff, Plan, TaskInstance, Status
-from task_registry import TaskRegistry, _REGISTRY
+from pathlib import Path
+from uuid import UUID
+from plan import PlanDiff, Plan, TaskInstance, Status, From
+from task_registry import TaskRegistry, _REGISTRY, spec_name_from_callable
 from promise import SimpleViolation, MaxParallelism, scope_applies
 from event_system import EventWriter
 from execution_context import ExecutionContext
-from pathlib import Path
-from uuid import UUID
+from graphviz_export import build_dot, write_dot_file, render_png_file
 
 class Orchestrator:
     def __init__(self, registry: TaskRegistry, events_path: Path = Path("outputs/events.jsonl")):
@@ -22,13 +23,21 @@ class Orchestrator:
         self.events = EventWriter(events_path)
         self._pool: dict[str, mp.Process] = {}
         self._ctrl_q: mp.Queue = mp.Queue()
+        self._mgr = mp.Manager()
+        self._status = self._mgr.dict()   # {task_id: "pending"/"running"/"success"/"failed"/"terminated"}
+        self._results = self._mgr.dict()
     
-    def start(self, entry: str | Callable[..., Any], inputs: Dict[str, Any], output_path: Path) -> str:
-        self._output_path = output_path
-        self._dots_created = 0
-        spec_name = entry if isinstance(entry, str) else entry.__name__
+    def start(self, entry: Callable, inputs: dict[str, Any], output_path: Path) -> str:
+        if not callable(entry):
+            raise TypeError(f"start(entry=...) must be a function, got {type(entry).__name__}")
+        
+        spec_name = spec_name_from_callable(entry)
         if not self.registry.exists(spec_name):
             raise ValueError(f"Entry task '{spec_name}' is not registered")
+        
+        self._output_path = output_path
+        self._dots_created = 0
+
         root_id = uuid.uuid4()
         self.plan.taskInstances[root_id] = TaskInstance(id=root_id, spec_name=spec_name, inputs=inputs)
         self.events.write({"type": "NodeCreated", "id": root_id, "spec": spec_name})
@@ -71,22 +80,47 @@ class Orchestrator:
         label = active_caps[0][0]
         running = sum(1 for n in self.plan.taskInstances.values() if (n.status == Status.RUNNING and (label in n.labels)))
         return running < min_k
+    
+    def _resolve_inputs(self, obj):
+        # Replace From(...) with producer outputs; recurse into dicts/lists/tuples
+        if isinstance(obj, From):
+            out = self.plan.taskInstances[obj.task_id].outputs
+            if obj.path:
+                for part in obj.path.split("."):
+                    out = out[part]
+            return out
+        if isinstance(obj, dict):
+            return {k: self._resolve_inputs(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self._resolve_inputs(v) for v in obj]
+        if isinstance(obj, tuple):
+            return tuple(self._resolve_inputs(v) for v in obj)
+        return obj
 
     def _start_task(self, node: TaskInstance) -> None:
         # If reduce node with gather marker, materialize its inputs now (all preds have completed)
         if "__gather_from__" in node.inputs:
-            sources: List[str] = node.inputs.pop("__gather_from__")
-            node.inputs["parts"] = [self.plan.taskInstances[s].outputs for s in sources]
+            sources = node.inputs.pop("__gather_from__")
+            reduce_param = node.inputs.pop("__reduce_param__", "parts")
+            gathered = [self.plan.taskInstances[s].outputs for s in sources]
+            node.inputs[reduce_param] = gathered
 
         if "__gather_from_named__" in node.inputs:
             sources_map: Dict[str, str] = node.inputs.pop("__gather_from_named__")
             for param_name, src_id in sources_map.items():
                 node.inputs[param_name] = self.plan.taskInstances[src_id].outputs
+            
+        resolved_inputs = self._resolve_inputs(node.inputs)
+        node.inputs = resolved_inputs
 
         node.status = Status.RUNNING
+        self._status[node.id] = Status.RUNNING
         node.started_at = time.time()
         self.events.write({"type": "TaskStarted", "id": node.id, "spec": node.spec_name})
-        p = mp.Process(target=_worker_entry, args=(node.id, node.spec_name, node.inputs, self._ctrl_q))
+        p = mp.Process(
+            target=_worker_entry, 
+            args=(node.id, node.spec_name, resolved_inputs, self._ctrl_q, self._status, self._results)
+        )
         p.daemon = True
         p.start()
         self._pool[node.id] = p
@@ -107,9 +141,37 @@ class Orchestrator:
                 node = self.plan.taskInstances[tid]
                 node.outputs = payload.get("output")
                 node.status = Status.SUCCESS
+                self._status[tid] = Status.SUCCESS
+                self._results[tid] = node.outputs
                 node.ended_at = time.time()
-                self.events.write({"type": "TaskCompleted", "id": tid, "spec": node.spec_name})
+                self.events.write({
+                    "type": "TaskCompleted",
+                    "id": tid,
+                    "spec": node.spec_name,
+                    "output": node.outputs,
+                })
                 self.export_dot()
+    
+    def export_dot(self, write_png: bool = True) -> tuple[str, Optional[str]]:
+        base, _ = os.path.splitext(self._output_path)  # self._output_path is your base path
+        dot_path = f"{base}{self._dots_created}.dot"
+        png_path = os.path.splitext(dot_path)[0] + ".png" if write_png else None
+        self._dots_created += 1
+
+        dot_str = build_dot(self.plan)
+        write_dot_file(dot_str, Path(dot_path))
+
+        if write_png:
+            ok = render_png_file(dot_str, Path(png_path))
+            if not ok:
+                self.events.write({
+                    "type": "ExportWarning",
+                    "warning": "Graphviz not available; PNG not written",
+                    "dot_path": dot_path,
+                })
+                png_path = None
+
+        return dot_path, png_path
 
     def _handle_plandiff(self, diff: PlanDiff) -> None:
         violations: List[SimpleViolation] = []
@@ -163,85 +225,24 @@ class Orchestrator:
             })
         self.export_dot()
 
-    def export_dot(self, write_png: bool = True) -> tuple[str, Optional[str]]:
-        #os.makedirs(os.path.dirname(self._output_path) or ".", exist_ok=True)
-        self._output_path.parent.mkdir(exist_ok=True, parents=True)
-
-        # normalize base path to a .dot path
-        output_path_no_file_type, _ = os.path.splitext(self._output_path)
-        dot_path = output_path_no_file_type + str(self._dots_created) + ".dot"
-        png_path = (os.path.splitext(dot_path)[0]) if write_png else None
-        self._dots_created += 1
-
-        lines = ["digraph G {", "rankdir=LR;"]
-        for node in self.plan.taskInstances.values():
-            uuid_slice = str(node.id)[:6]
-            label = f"{node.spec_name}\\n{uuid_slice}"
-            style = ""
-            if node.status == Status.RUNNING:
-                style = ", shape=doublecircle"
-            elif node.status == Status.SUCCESS:
-                style = ", style=filled"
-            elif node.status in (Status.FAILED, Status.TERMINATED):
-                style = ", color=red"
-            lines.append(f'  "{node.id}" [label="{label}"{style}];')
-        for e in self.plan.edges:
-            lines.append(f'  "{e.from_id}" -> "{e.to_id}";')
-        lines.append("}")
-        dot_str = "\n".join(lines)
-
-        # write .dot
-        with open(dot_path, "w", encoding="utf-8") as f:
-            f.write(dot_str)
-
-        if write_png:
-            rendered = False
-            # try python-graphviz
-            try:
-                from graphviz import Source
-                png_debug = os.path.dirname(dot_path)
-                src = Source(dot_str, filename=png_path,
-                            format="png", directory="pngs")
-                src.render(cleanup=True)
-                rendered = True
-            except Exception as e:
-                # call dot directly if available
-                try:
-                    import shutil, subprocess
-                    dot_bin = shutil.which("dot")
-                    if dot_bin:
-                        subprocess.run([dot_bin, "-Tpng", dot_path, "-o", png_path], check=True)
-                        rendered = True
-                except Exception as e2:
-                    # fall through to warning
-                    pass
-
-            if not rendered:
-                self.events.write({
-                    "type": "ExportWarning",
-                    "warning": "Graphviz not available; PNG not written",
-                    "dot_path": dot_path,
-                })
-                png_path = None
-
-        return dot_path, png_path
-
-
     def _all_terminal(self) -> bool:
         terminal_status = lambda status : status in (Status.SUCCESS, Status.FAILED, Status.TERMINATED)
         return all(terminal_status(n.status) for n in self.plan.taskInstances.values())
 
-def _params(obj: Any) -> Dict[str, Any] | str:
-        try:
-            if is_dataclass(obj):
-                return asdict(obj)
-        except Exception:
-            pass
-        d = getattr(obj, "__dict__", None)
-        return d if isinstance(d, dict) else {"repr": repr(obj)}
-
-def _worker_entry(node_id: str, spec_name: str, inputs: Dict[str, Any], ctrl_q: mp.Queue) -> None:
-    ctx = ExecutionContext(ctrl_q, me_id=node_id)
+def _worker_entry(
+        node_id: str, 
+        spec_name: str, 
+        inputs: dict[str, Any], 
+        ctrl_q: mp.Queue, 
+        status_proxy, 
+        results_proxy
+    ) -> None:
+    ctx = ExecutionContext(
+        ctrl_q, 
+        me_id=node_id, 
+        status_proxy=status_proxy, 
+        results_proxy=results_proxy
+    )
     try:
         fn = _REGISTRY.get(spec_name).fn
         result = fn(ctx, **inputs)
