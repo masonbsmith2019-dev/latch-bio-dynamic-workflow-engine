@@ -1,23 +1,22 @@
 from __future__ import annotations
-import multiprocessing as mp
-from dataclasses import dataclass, field, asdict, is_dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Callable, List, Optional
 from promise import ScopedConstraint
 
 @dataclass(frozen=True, slots=True)
 class TaskSpec:
     name: str
-    fn: Callable[..., Any]
+    fn: Callable
     input_schema: Any | None = None
     output_schema: Any | None = None
-    default_promises: List["ScopedConstraint"] = field(default_factory=list)
+    default_promises: list["ScopedConstraint"] = field(default_factory=list)
 
 class TaskRegistry:
     def __init__(self):
-        self._specs: Dict[str, TaskSpec] = {}
+        self._specs: dict[str, TaskSpec] = {}
 
     def add(self, spec: TaskSpec) -> None:
-        if spec.name in self._specs:
+        if spec.name in self._specs:    
             raise ValueError(f"Task {spec.name} already registered")
         self._specs[spec.name] = spec
 
@@ -34,7 +33,7 @@ _REGISTRY = TaskRegistry()
     
 def task(name: Optional[str] = None, **kwargs):
     def deco(fn: Callable[..., Any]):
-        spec_name = name or fn.__name__
+        spec_name = name if name is not None else fn.__name__
         _REGISTRY.add(TaskSpec(name=spec_name, fn=fn, **kwargs))
         return fn
     return deco

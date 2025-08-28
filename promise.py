@@ -2,7 +2,8 @@ from __future__ import annotations
 import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
-from plan import Plan, PlanDiff
+from plan import Plan, PlanDiff, Edge
+from uuid import UUID
 
 class Violation(Protocol):
     type: str
@@ -44,26 +45,29 @@ def scope_applies(scope: Scope, diff: PlanDiff) -> bool:
 
 @dataclass(frozen=True, slots=True)
 class OnlySpecificNodesAllowed:
-    allowed: Set[str] #the new nodes specified by the 
+    allowed: set[str] #the new nodes specified by the 
     def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
         bad = [n.spec_name for n in diff.new_nodes if n.spec_name not in self.allowed]
         return [SimpleViolation("OnlySpecificNodesAllowed", {"bad_nodes": bad})] if bad else []
 
 @dataclass(frozen=True, slots=True)
 class OnlySpecificEdgesAllowed:
-    allowed_spec_pairs: Set[Tuple[str, str]]  # (from_spec, to_spec)
-    def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
+    allowed_spec_pairs: set[tuple[str, str]]  # (from_spec, to_spec)
+    def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]: #should change to true/false and emit violations?
         # Build an overlay: known nodes in the plan + nodes introduced by this diff
-        overlay: Dict[str, str] = {nid: ti.spec_name for nid, ti in plan.nodes.items()}
+        overlay: dict[UUID, str] = {nid: ti.spec_name for nid, ti in plan.taskInstances.items()}
         overlay.update({n.id: n.spec_name for n in diff.new_nodes})
 
-        bad: List[Dict[str, str]] = []
-        for a, b in diff.new_edges:
-            from_spec = overlay.get(a)
-            to_spec   = overlay.get(b)
+        bad: list[dict[str, str]] = []
+        for new_edge in diff.new_edges:
+            from_spec = overlay.get(new_edge.from_id)
+            to_spec = overlay.get(new_edge.to_id)
+            #invalid edge
             if from_spec is None or to_spec is None:
-                bad.append({"from": str(a), "to": str(b), "reason": "unknown_node_in_diff"})
+                #maybe make an EdgeViolationEvent?
+                bad.append({"from": str(new_edge.from_id), "to": str(new_edge.to_id), "reason": "unknown_node_in_diff"})
                 continue
+            #unallowed edge
             if (from_spec, to_spec) not in self.allowed_spec_pairs:
                 bad.append({"from": from_spec, "to": to_spec})
 

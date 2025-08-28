@@ -7,29 +7,30 @@ import uuid
 import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
-from plan import PlanDiff, Plan, TaskInstance
+from plan import PlanDiff, Plan, TaskInstance, Status
 from task_registry import TaskRegistry, _REGISTRY
 from promise import SimpleViolation, MaxParallelism, scope_applies
 from event_system import EventWriter
 from execution_context import ExecutionContext
+from pathlib import Path
+from uuid import UUID
 
 class Orchestrator:
-    def __init__(self, registry: TaskRegistry, events_path: str = "outputs/events.jsonl"):
+    def __init__(self, registry: TaskRegistry, events_path: Path = Path("outputs/events.jsonl")):
         self.registry = registry
         self.plan = Plan()
         self.events = EventWriter(events_path)
-        self._pool: Dict[str, mp.Process] = {}
+        self._pool: dict[str, mp.Process] = {}
         self._ctrl_q: mp.Queue = mp.Queue()
     
-    def start(self, entry: str | Callable[..., Any], inputs: Dict[str, Any], output_path: str) -> str:
+    def start(self, entry: str | Callable[..., Any], inputs: Dict[str, Any], output_path: Path) -> str:
         self._output_path = output_path
         self._dots_created = 0
         spec_name = entry if isinstance(entry, str) else entry.__name__
         if not self.registry.exists(spec_name):
             raise ValueError(f"Entry task '{spec_name}' is not registered")
-        root_id = str(uuid.uuid4())
-        node = TaskInstance(id=root_id, spec_name=spec_name, inputs=inputs)
-        self.plan.nodes[root_id] = node
+        root_id = uuid.uuid4()
+        self.plan.taskInstances[root_id] = TaskInstance(id=root_id, spec_name=spec_name, inputs=inputs)
         self.events.write({"type": "NodeCreated", "id": root_id, "spec": spec_name})
         self.events.write({"type": "WorkflowStarted", "wf_root": root_id, "entry_spec": spec_name})
         return root_id
@@ -37,8 +38,8 @@ class Orchestrator:
     def run_to_completion(self, root_id: str) -> None:
         while True:
             # schedule ready tasks
-            for tid, node in list(self.plan.nodes.items()):
-                if node.status == "pending" and self._deps_done(tid):
+            for tid, node in list(self.plan.taskInstances.items()):
+                if node.status == Status.PENDING and self._deps_done(tid):
                     if self._can_start_due_to_parallelism(node):
                         self._start_task(node)
                     # else: leave pending; will retry next tick
@@ -51,9 +52,9 @@ class Orchestrator:
                 break
             time.sleep(0.01)
 
-    def _deps_done(self, tid: str) -> bool:
+    def _deps_done(self, tid: UUID) -> bool:
         preds = self.plan.predecessors(tid)
-        return all(self.plan.nodes[p].status == "success" for p in preds)
+        return all(self.plan.taskInstances[p].status == Status.SUCCESS for p in preds)
 
     def _can_start_due_to_parallelism(self, node: TaskInstance) -> bool:
         #to do, check that number running < active_cap
@@ -68,21 +69,21 @@ class Orchestrator:
         min_k = min(k for _, k in active_caps)
         # assume one label per group in this POC
         label = active_caps[0][0]
-        running = sum(1 for n in self.plan.nodes.values() if (n.status == "running" and (label in n.labels)))
+        running = sum(1 for n in self.plan.taskInstances.values() if (n.status == Status.RUNNING and (label in n.labels)))
         return running < min_k
 
     def _start_task(self, node: TaskInstance) -> None:
         # If reduce node with gather marker, materialize its inputs now (all preds have completed)
         if "__gather_from__" in node.inputs:
             sources: List[str] = node.inputs.pop("__gather_from__")
-            node.inputs["parts"] = [self.plan.nodes[s].outputs for s in sources]
+            node.inputs["parts"] = [self.plan.taskInstances[s].outputs for s in sources]
 
         if "__gather_from_named__" in node.inputs:
             sources_map: Dict[str, str] = node.inputs.pop("__gather_from_named__")
             for param_name, src_id in sources_map.items():
-                node.inputs[param_name] = self.plan.nodes[src_id].outputs
+                node.inputs[param_name] = self.plan.taskInstances[src_id].outputs
 
-        node.status = "running"
+        node.status = Status.RUNNING
         node.started_at = time.time()
         self.events.write({"type": "TaskStarted", "id": node.id, "spec": node.spec_name})
         p = mp.Process(target=_worker_entry, args=(node.id, node.spec_name, node.inputs, self._ctrl_q))
@@ -103,12 +104,11 @@ class Orchestrator:
                 self.events.write({"type": "TaskLog", **payload})
             elif kind == "emit":
                 tid = payload["task_id"]
-                node = self.plan.nodes[tid]
+                node = self.plan.taskInstances[tid]
                 node.outputs = payload.get("output")
-                node.status = "success"
+                node.status = Status.SUCCESS
                 node.ended_at = time.time()
                 self.events.write({"type": "TaskCompleted", "id": tid, "spec": node.spec_name})
-                #add dot creation here
                 self.export_dot()
 
     def _handle_plandiff(self, diff: PlanDiff) -> None:
@@ -122,9 +122,14 @@ class Orchestrator:
                 "diff_emitter": diff.emitter_id,
                 "violations": violations #[_params(v) for v in violations],
             })
-            for node in self.plan.nodes.values():
-                if node.status in ("pending", "running"):
-                    node.status = "terminated"
+            for node in self.plan.taskInstances.values():
+                if node.status in (Status.PENDING, Status.RUNNING):
+                    node.status = Status.TERMINATED
+            #could do one loop instead, using _pool.items
+            #this gives taskID, which we can use to index self.plan.taskInstance[taskID].status = terminated
+            for p in self._pool.values():
+                if p.is_alive():
+                    p.terminate()
             return
 
         if diff.new_promises:
@@ -139,7 +144,7 @@ class Orchestrator:
                 })
 
         for n in diff.new_nodes:
-            self.plan.nodes[n.id] = TaskInstance(
+            self.plan.taskInstances[n.id] = TaskInstance(
                 id=n.id,
                 spec_name=n.spec_name,
                 inputs=n.inputs,
@@ -147,13 +152,20 @@ class Orchestrator:
                 labels=set(n.labels),
             )
             self.events.write({"type": "NodeCreated", "id": n.id, "spec": n.spec_name, "parent_id": n.parent_id, "labels": list(n.labels)})
-        for a, b in diff.new_edges:
-            self.plan.edges.add((a, b))
-            self.events.write({"type": "EdgeCreated", "from": a, "to": b, "from_spec": self.plan.spec_of(a), "to_spec": self.plan.spec_of(b)})
+        for new_edge in diff.new_edges:
+            self.plan.edges.add(new_edge)
+            self.events.write({
+                "type": "EdgeCreated",
+                "from": str(new_edge.from_id),
+                "to": str(new_edge.to_id),
+                "from_spec": self.plan.spec_of(new_edge.from_id),
+                "to_spec": self.plan.spec_of(new_edge.to_id),
+            })
         self.export_dot()
 
     def export_dot(self, write_png: bool = True) -> tuple[str, Optional[str]]:
-        os.makedirs(os.path.dirname(self._output_path) or ".", exist_ok=True)
+        #os.makedirs(os.path.dirname(self._output_path) or ".", exist_ok=True)
+        self._output_path.parent.mkdir(exist_ok=True, parents=True)
 
         # normalize base path to a .dot path
         output_path_no_file_type, _ = os.path.splitext(self._output_path)
@@ -162,18 +174,19 @@ class Orchestrator:
         self._dots_created += 1
 
         lines = ["digraph G {", "rankdir=LR;"]
-        for node in self.plan.nodes.values():
-            label = f"{node.spec_name}\\n{node.id[:6]}"
+        for node in self.plan.taskInstances.values():
+            uuid_slice = str(node.id)[:6]
+            label = f"{node.spec_name}\\n{uuid_slice}"
             style = ""
-            if node.status == "running":
+            if node.status == Status.RUNNING:
                 style = ", shape=doublecircle"
-            elif node.status == "success":
+            elif node.status == Status.SUCCESS:
                 style = ", style=filled"
-            elif node.status in ("failed", "terminated"):
+            elif node.status in (Status.FAILED, Status.TERMINATED):
                 style = ", color=red"
             lines.append(f'  "{node.id}" [label="{label}"{style}];')
-        for a, b in self.plan.edges:
-            lines.append(f'  "{a}" -> "{b}";')
+        for e in self.plan.edges:
+            lines.append(f'  "{e.from_id}" -> "{e.to_id}";')
         lines.append("}")
         dot_str = "\n".join(lines)
 
@@ -215,7 +228,8 @@ class Orchestrator:
 
 
     def _all_terminal(self) -> bool:
-        return all(n.status in ("success", "failed", "terminated") for n in self.plan.nodes.values())
+        terminal_status = lambda status : status in (Status.SUCCESS, Status.FAILED, Status.TERMINATED)
+        return all(terminal_status(n.status) for n in self.plan.taskInstances.values())
 
 def _params(obj: Any) -> Dict[str, Any] | str:
         try:

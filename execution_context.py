@@ -31,7 +31,7 @@ class ExecutionContext:
     ) -> str:
         """Create a node that depends on the parents and receives their outputs as named args."""
         spec_name = spec if isinstance(spec, str) else spec.__name__
-        join_id = str(uuid.uuid4())
+        join_id = uuid.uuid4()
         nn = NewNode(
             id=join_id,
             spec_name=spec_name,
@@ -42,7 +42,7 @@ class ExecutionContext:
         diff = PlanDiff(
             emitter_id=self.me_id,
             new_nodes=[nn],
-            new_edges=[(pid, join_id) for pid in name_to_parent.values()],
+            new_edges=[Edge(pid, join_id) for pid in name_to_parent.values()],
         )
         self._q.put(("plandiff", diff))
         return join_id
@@ -57,11 +57,11 @@ class ExecutionContext:
         ) -> str:
         spec_name = task if isinstance(task, str) else task.__name__
         #this is where new UUID's are generated
-        child_id = str(uuid.uuid4())
+        child_id = uuid.uuid4()
         diff = PlanDiff(
             emitter_id=self.me_id,
             new_nodes=[NewNode(id=child_id, spec_name=spec_name, inputs=inputs, parent_id=self.me_id, labels=labels or set())],
-            new_edges=[(self.me_id, child_id)],
+            new_edges=[Edge(self.me_id, child_id)],
         )
         self._q.put(("plandiff", diff))
         return child_id
@@ -79,25 +79,27 @@ class ExecutionContext:
         reduce_spec = reduce if (isinstance(reduce, str) or reduce is None) else reduce.__name__
         #use group label if passed in, otherwise combine emitter task instance UUID and newly generated UUID 
         gid = group_label or f"map:{self.me_id}:{uuid.uuid4().hex[:6]}"
-        new_nodes: List[NewNode] = []
-        new_edges: List[Edge] = []
-        map_ids: List[str] = []
+        new_nodes: list[NewNode] = []
+        new_edges: list[Edge] = []
+        map_ids: list[str] = []
 
         # create map clones
         for it in items:
+            #this is line i'll want to change for argument flexibility
+            #specifically, letting reduce functions accept any variable name, instead of just item
             inputs = it if isinstance(it, dict) else {"item": it}
-            cid = str(uuid.uuid4())
+            cid = uuid.uuid4()
             map_ids.append(cid)
             new_nodes.append(NewNode(id=cid, spec_name=map_spec, inputs=inputs, parent_id=self.me_id, labels={gid}))
-            new_edges.append((self.me_id, cid))
+            new_edges.append(Edge(self.me_id, cid))
 
         reduce_id: Optional[str] = None
         if reduce_spec is not None:
-            reduce_id = str(uuid.uuid4())
+            reduce_id = uuid.uuid4()
             # gather from makes it so orchestrator will gather outputs into parts when scheduling
             new_nodes.append(NewNode(id=reduce_id, spec_name=reduce_spec, inputs={"__gather_from__": map_ids}, parent_id=self.me_id))
             for mid in map_ids:
-                new_edges.append((mid, reduce_id))
+                new_edges.append(Edge(mid, reduce_id))
 
         # group-scoped promises (global scope, but they only act on nodes with this label)
         new_promises: List[ScopedConstraint] = [

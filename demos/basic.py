@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from task_registry import task, _REGISTRY
 from execution_context import ExecutionContext
 from orchestrator import Orchestrator
+from pathlib import Path
 
 @task(name="task_1")
 def task_1(ctx: ExecutionContext, a: int, b: int, c: int) -> int:
@@ -36,7 +37,7 @@ def my_workflow(ctx: ExecutionContext, a: int, b: int, c: int, m: int, n: int) -
 
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY)
-    root = orc.start(entry="my_workflow", inputs={"a": 1, "b": 2, "c": 3, "m": 4, "n": 5})
+    root = orc.start(entry="my_workflow", inputs={"a": 1, "b": 2, "c": 3, "m": 4, "n": 5}, output_path=Path("outputs/static_dag"))
     orc.run_to_completion(root)
-    dot_path, png_path = orc.export_dot("outputs/static_dag", write_png=True)
+    dot_path, png_path = orc.export_dot()
     print("Static DAG complete.")

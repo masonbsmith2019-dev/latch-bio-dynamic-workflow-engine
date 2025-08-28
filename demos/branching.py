@@ -9,6 +9,8 @@ from execution_context import ExecutionContext
 from orchestrator import Orchestrator
 # If your constraints live elsewhere, adjust this import:
 from promise import OnlySpecificNodesAllowed, OnlySpecificEdgesAllowed
+from plan import Edge
+from pathlib import Path
 
 
 @task(name="CheckNumber")
@@ -44,7 +46,7 @@ def nonpositive(ctx: ExecutionContext, n: int) -> dict:
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY)
     # change to negative num to exercise the other branch
-    root = orc.start(entry="CheckNumber", inputs={"n": -1}, output_path="outputs/branching.dot")
+    root = orc.start(entry="CheckNumber", inputs={"n": -1}, output_path=Path("outputs/branching.dot"))
     orc.run_to_completion(root)
     #orc.export_dot()
     print("Branching demo complete. See outputs/branching.dot and outputs/events.jsonl")

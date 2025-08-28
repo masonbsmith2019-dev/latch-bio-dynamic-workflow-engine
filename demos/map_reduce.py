@@ -4,6 +4,7 @@ import sys
 import time
 from dataclasses import dataclass, field, asdict, is_dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Protocol, Set, Tuple
+from pathlib import Path
 
 # Add parent directory to path to import project modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -35,7 +36,7 @@ def square_batch(ctx: ExecutionContext, numbers: List[int]) -> None:
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY)
     numbers = list(range(1, 11))  # 1..10
-    root = orc.start(entry="SquareBatch", inputs={"numbers": numbers})
+    root = orc.start(entry="SquareBatch", inputs={"numbers": numbers}, output_path=Path("outputs/map_reduce"))
     orc.run_to_completion(root)
     orc.export_dot("outputs/plan.dot")
     print("Run complete. See outputs/plan.dot and outputs/events.jsonl")
