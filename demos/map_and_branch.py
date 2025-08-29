@@ -67,6 +67,7 @@ def square_batch(ctx: ExecutionContext, numbers: list[int]) -> int:
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY, output_dir=Path("outputs/map_and_branch"))
     numbers = list(range(-2, 3))  # -3, -2, -1, 0, 1, 2, 3
+    #-8 + -1 + 0 + 1 + 4 = -4
     root = orc.start(entry=square_batch, inputs={"numbers": numbers})
     orc.run_to_completion(root)
     print("Run complete → outputs/map_and_branch (events.jsonl, dots/, pngs/).")

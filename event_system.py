@@ -11,30 +11,9 @@ from promise import PlanDiff
 from uuid import UUID
 from enum import Enum
 
-#this was causing an error for some reason
-# @dataclass(frozen=True, slots=True)
-# class PlanDiffEvent:
-#     type: Literal["plandiff"] = "plandiff"
-#     planDiff: PlanDiff
-
-# @dataclass(frozen=True, slots=True)
-# class LogEvent:
-#     type: Literal["log"] = "log"
-#     msg: str
-
-# @dataclass(frozen=True, slots=True)
-# class EmitEvent:
-#     type: Literal["emit"] = "emit"
-#     planDiff: PlanDiff
-
-#PlanDiffEvent needs PlanDiff
-#other events: Log, Emit
-
 class EventWriter:
     def __init__(self, out_path: Path):
         self.out_path = out_path
-        #os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        #open(self.out_path, "w").close()
         self.out_path.parent.mkdir(exist_ok=True, parents=True)
 
     #ev is the event we want to write
