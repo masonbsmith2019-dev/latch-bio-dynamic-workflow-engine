@@ -1,13 +1,11 @@
 from __future__ import annotations
-import json
-import os
 import queue
 import time
 import uuid
 import multiprocessing as mp
 from dataclasses import dataclass, field, asdict, is_dataclass
 import shutil
-from typing import Any, Callable, Literal, Optional, Protocol
+from typing import Any, Callable, Optional
 from pathlib import Path
 from uuid import UUID
 from plan import PlanDiff, Plan, TaskInstance, Status, From
@@ -50,10 +48,14 @@ class Orchestrator:
         self._pool: dict[str, mp.Process] = {}
         self._ctrl_q: mp.Queue = mp.Queue()
         self._mgr = mp.Manager()
-        self._status = self._mgr.dict()   # {task_id: "pending"/"running"/"success"/"failed"/"terminated"}
+        self._status = self._mgr.dict() # {task_id: "pending"/"running"/"success"/"failed"/"terminated"}
         self._results = self._mgr.dict()
-        self._spec_nodes: dict[str, dict] = {}           # spec_id -> {"spec": str, "parent": UUID|None, "source": "registration"|"promise"}
-        self._spec_edges: set[tuple[str, str]] = set()   # (from_uuid_or_str, to_spec_id)
+        self._spec_nodes: dict[str, dict] = {} # spec_id -> {"spec": str, "parent": UUID|None, "source": "registration"|"promise"}
+        self._spec_edges: set[tuple[str, str]] = set() # (from_uuid_or_str, to_spec_id)
+        
+        self._static_nodes: dict[str, dict] = {} # static_id -> {"spec": str, "parent": UUID}
+        self._static_edges: set[tuple[str, str]] = set() # (from_id_or_static_id, to_id_or_static_id)
+        
         self._spawn_budgets: dict[tuple[UUID, str], dict[str, int]] = {}
     
     def start(self, entry: Callable, inputs: dict[str, Any]) -> UUID:
@@ -64,14 +66,17 @@ class Orchestrator:
         if not self.registry.exists(spec_name):
             raise ValueError(f"Entry task '{spec_name}' is not registered")
         
-
         root_id = uuid.uuid4()
         self.plan.taskInstances[root_id] = TaskInstance(id=root_id, spec_name=spec_name, inputs=inputs)
         self.events.write({"type": "NodeCreated", "id": root_id, "spec": spec_name})
         self.events.write({"type": "WorkflowStarted", "wf_root": root_id, "entry_spec": spec_name})
         
+        # Enforce static behavior on any static nodes when they actually run.
         self._activate_default_promises_for(self.plan.taskInstances[root_id])
-        self._seed_speculative_from_static(root_id, spec_name, depth=1)
+
+        # static preview: seed deterministic placeholders (children + their deps)
+        self._seed_static_preview(root_id, spec_name)
+        
         self.export_dot()
         return root_id
     
@@ -97,7 +102,6 @@ class Orchestrator:
         return all(self.plan.taskInstances[p].status == Status.SUCCESS for p in preds)
 
     def _can_start_due_to_parallelism(self, node: TaskInstance) -> bool:
-        #to do, check that number running < active_cap
         # for each MaxParallelism(label=k), ensure running nodes with that label < k
         active_caps: list[tuple[str, int]] = []
         for sc in self.plan.promises:
@@ -107,7 +111,6 @@ class Orchestrator:
         if not active_caps:
             return True
         min_k = min(k for _, k in active_caps)
-        # assume one label per group in this POC
         label = active_caps[0][0]
         running = sum(1 for n in self.plan.taskInstances.values() if (n.status == Status.RUNNING and (label in n.labels)))
         return running < min_k
@@ -129,7 +132,7 @@ class Orchestrator:
         return obj
     
     def _mk_spec_id(self, parent: UUID | str, spec_name: str) -> str:
-        # deterministic ghost id so multiple promises don't duplicate nodes."""
+        # deterministic ghost id so multiple promises don't duplicate nodes
         return f"ghost:{parent}:{spec_name}"
 
     def _has_real_child(self, parent: UUID, spec: str) -> bool:
@@ -139,7 +142,7 @@ class Orchestrator:
         )
 
     def _seed_speculative_from_static(self, parent_real_id, parent_spec: str, *, depth: int = 1) -> None:
-        # registration-time speculative skeleton from @task(..., calls=[...])."""
+        # registration-time speculative skeleton from @task(..., calls=[...])
         if depth <= 0:
             return
         if not self.registry.exists(parent_spec):
@@ -153,13 +156,12 @@ class Orchestrator:
             self._spec_edges.add((str(parent_real_id), sid))
     
     def _activate_default_promises_for(self, ti: TaskInstance) -> None:
-        """Attach NoNewNodes/NoNewEdges automatically for static tasks."""
+        # attach NoNewNodes/NoNewEdges automatically for static tasks
         try:
             spec = self.registry.get(ti.spec_name)
         except KeyError:
             return
 
-        # Use `static` (not `is_static`) per your TaskSpec
         if not getattr(spec, "static", False):
             return
 
@@ -168,7 +170,7 @@ class Orchestrator:
             ScopedConstraint(NoNewEdges(), OwnerDescendantsScope(owner_id=ti.id)),
         ]
 
-        # De-dupe: don't add identical (constraint type + owner) twice
+        # de-dupe: don't add identical (constraint type + owner) twice
         existing = {(type(s.constraint), getattr(s.scope, "owner_id", None))
                     for s in self.plan.promises}
 
@@ -254,10 +256,18 @@ class Orchestrator:
         png_path = (self._pngs_dir / f"{stem}.png") if write_png else None
         self._dots_created += 1
 
+        self.events.write({
+        "type": "RenderInputs",
+        "static_nodes": list(self._static_nodes.keys()),
+        "static_edges": list(self._static_edges),
+        })
+
         dot_str = build_dot(
             self.plan,
-            spec_nodes=self._spec_nodes,   # ghosts
-            spec_edges=self._spec_edges,   # ghost edges
+            spec_nodes=self._spec_nodes,
+            spec_edges=self._spec_edges,
+            static_nodes=self._static_nodes,
+            static_edges=self._static_edges,
         )
         write_dot_file(dot_str, Path(dot_path))
 
@@ -303,7 +313,7 @@ class Orchestrator:
                     "owner": getattr(sc.scope, "owner_id", None),
                     "scope": sc.scope.__class__.__name__,
                     "constraint": sc.constraint.__class__.__name__,
-                    "params": sc.constraint, #should i use _params here?
+                    "params": sc.constraint,
                 })
 
                 if isinstance(sc.scope, OwnerDescendantsScope):
@@ -338,7 +348,7 @@ class Orchestrator:
 
                         remaining = max(0, limit - used)
 
-                        # If there was a “plain” ghost for the same (owner, spec), remove it to avoid duplicates.
+                        # ff there was a “plain” ghost for the same (owner, spec), remove it to avoid duplicates
                         plain_gid = self._mk_spec_id(owner, spec)
                         if plain_gid in self._spec_nodes:
                             del self._spec_nodes[plain_gid]
@@ -391,12 +401,36 @@ class Orchestrator:
             
             # attach default promises for static children
             self._activate_default_promises_for(ti)
+
+            try:
+                spec_obj = self.registry.get(ti.spec_name)
+                if getattr(spec_obj, "preview_calls", ()) or getattr(spec_obj, "preview_edges", ()):
+                    # seed static placeholders under this new real parent
+                    self._seed_static_preview(ti.id, ti.spec_name)
+
+                    # replace any prior *registration* ghosts for this parent with the static preview
+                    to_delete = [
+                        gid for gid, meta in self._spec_nodes.items()
+                        if meta.get("parent") == ti.id and meta.get("source") == "registration"
+                    ]
+                    if to_delete:
+                        for gid in to_delete:
+                            del self._spec_nodes[gid]
+                        # drop dotted edges to those ghosts (and any ghost->ghost edges if you had them)
+                        self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b not in to_delete and a not in to_delete}
+            except KeyError:
+                pass
             
-            # clear matching ghost, if any
+            # If we had a static preview for the same (parent,spec), remove it and its static edges
+            if ti.parent_id is not None:
+                sid = self._mk_static_id(ti.parent_id, ti.spec_name)
+                if sid in self._static_nodes:
+                    del self._static_nodes[sid]
+                    self._static_edges = {(a, b) for (a, b) in self._static_edges if a != sid and b != sid}
+
+            # clear matching ghost
             for sid, meta in list(self._spec_nodes.items()):
-                if (meta.get("parent") == n.parent_id and
-                    meta.get("spec") == n.spec_name and
-                    meta.get("source") != "budget"):
+                if meta.get("parent") == n.parent_id and meta.get("spec") == n.spec_name:
                     del self._spec_nodes[sid]
                     self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != sid}
                     break
@@ -436,7 +470,7 @@ class Orchestrator:
                             if not (a == str(parent_id) and b in to_delete)}
 
     def _prune_all_ghost_children(self, parent_id: UUID) -> None:
-        # Remove any remaining ghost kids once the parent is done (safe fallback)
+        # Remove any remaining ghost kids once the parent is done
         to_delete = [sid for sid, meta in self._spec_nodes.items()
                     if meta.get("parent") == parent_id]
         if not to_delete:
@@ -451,6 +485,51 @@ class Orchestrator:
     def _count_real_children(self, parent: UUID, spec: str) -> int:
         return sum(1 for t in self.plan.taskInstances.values()
                 if t.parent_id == parent and t.spec_name == spec)
+
+    def _seed_speculative_from_dynamic(self, *, parent_real_id: UUID, parent_spec: str) -> None:
+        if not self.registry.exists(parent_spec):
+            return
+        parent_spec_obj = self.registry.get(parent_spec)
+        for child_spec in getattr(parent_spec_obj, "preview_calls", ()):
+            gid = self._mk_spec_id(parent_real_id, child_spec)
+            # Ghost node and dotted edge from the real parent
+            self._spec_nodes.setdefault(gid, {
+                "spec": child_spec,
+                "parent": parent_real_id,
+                "source": "registration"
+            })
+            self._spec_edges.add((str(parent_real_id), gid))
+
+    def _mk_static_id(self, parent: UUID | str, spec_name: str) -> str:
+        # deterministic id for static-preview placeholder under a given parent
+        return f"static:{parent}:{spec_name}"
+
+    def _seed_static_preview(self, parent_real_id: UUID, parent_spec: str) -> None:
+        # Create static preview nodes (not ghosts) for the given parent spec
+        # also create parent to static lineage edges plus static to static dependency edges.
+        if not self.registry.exists(parent_spec):
+            return
+        spec = self.registry.get(parent_spec)
+
+        self.events.write({
+            "type": "StaticSpecPreview",
+            "parent": str(parent_real_id),
+            "spec": parent_spec,
+            "preview_calls": list(getattr(spec, "preview_calls", ())),
+            "preview_edges": list(getattr(spec, "preview_edges", ())),
+        })
+
+        # create a static placeholder per declared call
+        for child_spec in getattr(spec, "preview_calls", ()):
+            sid = self._mk_static_id(parent_real_id, child_spec)
+            self._static_nodes[sid] = {"spec": child_spec, "parent": parent_real_id}
+
+        # create static dependency edges between placeholders using preview_edges
+        for (src_name, dst_name) in getattr(spec, "preview_edges", ()):
+            src_id = self._mk_static_id(parent_real_id, src_name)
+            dst_id = self._mk_static_id(parent_real_id, dst_name)
+            if src_id in self._static_nodes and dst_id in self._static_nodes:
+                self._static_edges.add((src_id, dst_id))
 
 def _worker_entry(
         node_id: str, 

@@ -1,12 +1,9 @@
-# demos/map_reduce.py
 from __future__ import annotations
 import os, sys, time
 from pathlib import Path
 from typing import List
 
-# Local imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 from task_registry import task, _REGISTRY
 from execution_context import ExecutionContext
 from orchestrator import Orchestrator
@@ -18,7 +15,7 @@ from plan import From
 def square(ctx: ExecutionContext, item: int) -> int:
     ctx.log("square", n=item)
     # Tiny stagger so parallel runs are visible in the timeline
-    time.sleep(0.03 + (hash(item) % 10) * 0.002)
+    time.sleep(0.05)
     return item * item
 
 # reduce: sum the squares
@@ -32,7 +29,7 @@ def sum_reduce(ctx: ExecutionContext, parts: List[int]) -> int:
 @task
 def square_batch(ctx: ExecutionContext, numbers: List[int]) -> int:
     # Promise: this task may spawn at most len(numbers) `square`s.
-    # Also (optional) cap their parallelism via a label.
+    # Also cap their parallelism via a label.
     ctx.promise(
         LimitedSpawns(square, max_count=len(numbers)),
         MaxParallelism(label="squares", k=3),
@@ -53,7 +50,7 @@ def square_batch(ctx: ExecutionContext, numbers: List[int]) -> int:
 if __name__ == "__main__":
     outdir = Path("outputs/map_reduce")
     orc = Orchestrator(_REGISTRY, output_dir=outdir)
-    numbers = list(range(1, 5))  # 1..5
+    numbers = list(range(1, 10))  # 1..5
     root = orc.start(entry=square_batch, inputs={"numbers": numbers})
     orc.run_to_completion(root)
     print("Run complete → outputs/map_reduce (events.jsonl, dots/, pngs/)")
