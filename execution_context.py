@@ -63,7 +63,6 @@ class ExecutionContext:
         )
 
         # Edges: (parent -> child) + (each producer -> child)
-        #edges = [Edge(self.me_id, child_id)] + [Edge(pid, child_id) for pid in producers]
         edges = [Edge(pid, child_id) for pid in producers]
 
         self._q.put(("plandiff", PlanDiff(

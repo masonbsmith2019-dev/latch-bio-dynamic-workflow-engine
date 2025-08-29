@@ -33,7 +33,7 @@ def fork_join(ctx: ExecutionContext, x: int, y: int) -> int:
 
 if __name__ == "__main__":
     outdir = Path("outputs/from_fork_join")
-    orc = Orchestrator(_REGISTRY, events_path=outdir / "events.jsonl")
-    root = orc.start(entry=fork_join, inputs={"x": 2, "y": 3}, output_path=outdir / "plan")
+    orc = Orchestrator(_REGISTRY, output_dir=outdir)
+    root = orc.start(entry=fork_join, inputs={"x": 2, "y": 3})
     orc.run_to_completion(root)
-    print("Done → see outputs/from_fork_join (events.jsonl and DOT/PNGs)")
+    print("Done → see outputs/from_fork_join (events.jsonl, dots/, pngs/)")

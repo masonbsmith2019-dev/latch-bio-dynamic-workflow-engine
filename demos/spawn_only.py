@@ -36,8 +36,8 @@ def chain(ctx: ExecutionContext, n: int) -> int:
     return out
 
 if __name__ == "__main__":
-    orc = Orchestrator(_REGISTRY, events_path=Path("outputs/spawn_only_batch/events.jsonl"))
+    orc = Orchestrator(_REGISTRY, output_dir=Path("outputs/spawn_only_batch"))
     numbers = list(range(-3, 4))  # -3..0..3
-    root = orc.start(entry=batch, inputs={"numbers": numbers}, output_path=Path("outputs/spawn_only_batch"))
+    root = orc.start(entry=batch, inputs={"numbers": numbers})
     orc.run_to_completion(root)
-    print("Batch demo complete → outputs/spawn_only_batch (events.jsonl, DOT/PNG)")
+    print("Batch demo complete → outputs/spawn_only_batch (events.jsonl, dots/, pngs/)")

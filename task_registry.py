@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 # from promise import ScopedConstraint
 
 def spec_name_from_callable(fn: Callable) -> str:
@@ -13,7 +13,8 @@ class TaskSpec:
     fn: Callable
     input_schema: Any | None = None
     output_schema: Any | None = None
-    # default_promises: list["ScopedConstraint"] = field(default_factory=list)
+    static: bool = False
+    preview_calls: tuple[str, ...] = ()
 
 class TaskRegistry:
     def __init__(self):
@@ -35,11 +36,19 @@ class TaskRegistry:
     
 _REGISTRY = TaskRegistry()
     
-def task(fn: Callable | None = None):
+def task(fn: Callable | None = None, static: bool = False, calls: Iterable[Callable] = ()):
     #infer spec name from fn.__name__, require callables
+    # static=True: runtime enforcement (inject NoNewNodes/NoNewEdges when it starts)
+    # calls=[...] : registration time preview (speculative children to draw)
     def register(f: Callable):
         spec_name = f.__name__
         setattr(f, "__task_spec__", spec_name)   # used by ctx.map/spawn
-        _REGISTRY.add(TaskSpec(name=spec_name, fn=f))
+        preview = tuple(spec_name_from_callable(c) for c in calls)
+        _REGISTRY.add(TaskSpec(
+            name=spec_name,
+            fn=f,
+            static=static,
+            preview_calls=preview,
+        ))
         return f
     return register if fn is None else register(fn)

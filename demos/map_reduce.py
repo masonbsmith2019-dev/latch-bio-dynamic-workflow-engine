@@ -34,10 +34,10 @@ def square_batch(ctx: ExecutionContext, numbers: List[int]) -> None:
     ctx.emit({"group": handles.group_label, "count": len(handles.map_ids)})
 
 if __name__ == "__main__":
-    orc = Orchestrator(_REGISTRY)
+    orc = Orchestrator(_REGISTRY, output_dir=Path("outputs/map_reduce"))
     numbers = list(range(1, 11))  # 1..10
-    root = orc.start(entry="SquareBatch", inputs={"numbers": numbers}, output_path=Path("outputs/map_reduce"))
+    root = orc.start(entry="SquareBatch", inputs={"numbers": numbers})
     orc.run_to_completion(root)
-    orc.export_dot("outputs/plan.dot")
-    print("Run complete. See outputs/plan.dot and outputs/events.jsonl")
+    orc.export_dot()
+    print("Run complete. See outputs/map_reduce (events.jsonl, dots/, pngs/)")
     #dummy comments

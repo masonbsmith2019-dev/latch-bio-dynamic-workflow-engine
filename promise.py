@@ -51,6 +51,16 @@ def scope_applies(scope: Scope, diff: PlanDiff) -> bool:
 # concrete constraints
 
 @dataclass(frozen=True, slots=True)
+class NoNewNodes(Constraint):
+    def validate(self, plan, diff: PlanDiff) -> list[SimpleViolation]:
+        return [SimpleViolation("NoNewNodes", diff.emitter_id)] if diff.new_nodes else []
+
+@dataclass(frozen=True, slots=True)
+class NoNewEdges(Constraint):
+    def validate(self, plan, diff: PlanDiff) -> list[SimpleViolation]:
+        return [SimpleViolation("NoNewEdges", diff.emitter_id)] if diff.new_edges else []
+
+@dataclass(frozen=True, slots=True)
 class OnlySpecificNodesAllowed:
     allowed_specs: tuple[str, ...] #the new nodes specified by the 
     

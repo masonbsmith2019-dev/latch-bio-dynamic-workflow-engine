@@ -36,8 +36,8 @@ def my_workflow(ctx: ExecutionContext, a: int, b: int, c: int, m: int, n: int) -
     ctx.emit({"wired": True, "final_node": t3})
 
 if __name__ == "__main__":
-    orc = Orchestrator(_REGISTRY)
-    root = orc.start(entry="my_workflow", inputs={"a": 1, "b": 2, "c": 3, "m": 4, "n": 5}, output_path=Path("outputs/static_dag"))
+    orc = Orchestrator(_REGISTRY, output_dir=Path("outputs/static_dag"))
+    root = orc.start(entry="my_workflow", inputs={"a": 1, "b": 2, "c": 3, "m": 4, "n": 5})
     orc.run_to_completion(root)
     dot_path, png_path = orc.export_dot()
     print("Static DAG complete.")
