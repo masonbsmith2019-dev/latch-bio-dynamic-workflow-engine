@@ -121,9 +121,16 @@ def build_dot(
     # ghost nodes
     for gid, meta in spec_nodes.items():
         spec_name = meta.get("spec", "unknown")
-        label = f"{spec_name}\\n(spec)"
+        # Budget placeholder from LimitedSpawns: show remaining count
+        if meta.get("source") == "budget" and "remaining" in meta:
+            rem = int(meta["remaining"])
+            label = f"{spec_name}\\n({rem} left)"
+        else:
+            # Plain speculative/branching/preview ghost
+            label = f"{spec_name}\\n(spec)"
         lines.append(
-            f'  "{gid}" [label="{label}", style="filled,dashed", fillcolor="white", color="black", fontcolor="gray30"];'
+            f'  "{gid}" [label="{label}", style="filled,dashed", '
+            f'fillcolor="white", color="black", fontcolor="gray30"];'
         )
 
     # real data edges

@@ -16,7 +16,7 @@ from promise import (
     SimpleViolation, MaxParallelism, scope_applies,
     ScopedConstraint, OwnerDescendantsScope,
     OnlySpecificNodesAllowed, OnlySpecificEdgesAllowed,
-    NoNewNodes, NoNewEdges,
+    NoNewNodes, NoNewEdges, LimitedSpawns
 )
 from event_system import EventWriter
 from execution_context import ExecutionContext
@@ -54,6 +54,7 @@ class Orchestrator:
         self._results = self._mgr.dict()
         self._spec_nodes: dict[str, dict] = {}           # spec_id -> {"spec": str, "parent": UUID|None, "source": "registration"|"promise"}
         self._spec_edges: set[tuple[str, str]] = set()   # (from_uuid_or_str, to_spec_id)
+        self._spawn_budgets: dict[tuple[UUID, str], dict[str, int]] = {}
     
     def start(self, entry: Callable, inputs: dict[str, Any]) -> UUID:
         if not callable(entry):
@@ -242,8 +243,8 @@ class Orchestrator:
                     "spec": node.spec_name,
                     "output": node.outputs,
                 })
-                if self._is_branching_parent(tid):
-                    self._prune_all_ghost_children(tid)
+                # if self._is_branching_parent(tid):
+                self._prune_all_ghost_children(tid)
                 self.export_dot()
     
     def export_dot(self, write_png: bool = True) -> tuple[Path, Optional[Path]]:
@@ -327,6 +328,32 @@ class Orchestrator:
                                 gid = self._mk_spec_id(owner, b)
                                 self._spec_nodes.setdefault(gid, {"spec": b, "parent": owner, "source": "promise"})
                                 self._spec_edges.add((str(owner), gid))
+                    elif isinstance(sc.constraint, LimitedSpawns) and isinstance(sc.scope, OwnerDescendantsScope):
+                        owner = sc.scope.owner_id
+                        spec  = sc.constraint.target_spec
+                        limit = sc.constraint.max_count
+                        used  = self._count_real_children(owner, spec)
+
+                        self._spawn_budgets[(owner, spec)] = {"limit": limit, "used": used}
+
+                        remaining = max(0, limit - used)
+
+                        # If there was a “plain” ghost for the same (owner, spec), remove it to avoid duplicates.
+                        plain_gid = self._mk_spec_id(owner, spec)
+                        if plain_gid in self._spec_nodes:
+                            del self._spec_nodes[plain_gid]
+                            self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != plain_gid}
+
+                        # Add/update the budget placeholder ghost
+                        if remaining > 0:
+                            gid = self._mk_budget_gid(owner, spec)
+                            self._spec_nodes[gid] = {
+                                "spec": spec,
+                                "parent": owner,
+                                "source": "budget",
+                                "remaining": remaining,
+                            }
+                            self._spec_edges.add((str(owner), gid))
 
         for n in diff.new_nodes:
             ti = TaskInstance(
@@ -338,19 +365,42 @@ class Orchestrator:
             )
             self.plan.taskInstances[n.id] = ti
             self.events.write({"type": "NodeCreated", "id": n.id, "spec": n.spec_name, "parent_id": n.parent_id, "labels": list(n.labels)})
+            
+            key = (ti.parent_id, ti.spec_name)
+            if key in self._spawn_budgets:
+                state = self._spawn_budgets[key]
+                state["used"] += 1
+                remaining = max(0, state["limit"] - state["used"])
+                gid = self._mk_budget_gid(ti.parent_id, ti.spec_name)
+                if remaining <= 0:
+                    # remove the placeholder
+                    self._spec_nodes.pop(gid, None)
+                    self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != gid}
+                else:
+                    # update or create the placeholder with new remaining
+                    meta = self._spec_nodes.get(gid)
+                    if meta is None:
+                        self._spec_nodes[gid] = {
+                            "spec": ti.spec_name, "parent": ti.parent_id,
+                            "source": "budget", "remaining": remaining
+                        }
+                        self._spec_edges.add((str(ti.parent_id), gid))
+                    else:
+                        meta["remaining"] = remaining
+            
+            
             # attach default promises for static children
             self._activate_default_promises_for(ti)
             
             # clear matching ghost, if any
-            to_delete = None
-            for sid, meta in self._spec_nodes.items():
-                if meta.get("parent") == n.parent_id and meta.get("spec") == n.spec_name:
-                    to_delete = sid
+            for sid, meta in list(self._spec_nodes.items()):
+                if (meta.get("parent") == n.parent_id and
+                    meta.get("spec") == n.spec_name and
+                    meta.get("source") != "budget"):
+                    del self._spec_nodes[sid]
+                    self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != sid}
                     break
-            if to_delete:
-                del self._spec_nodes[to_delete]
-                self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != to_delete}
-        
+                                
         for new_edge in diff.new_edges:
             self.plan.edges.add(new_edge)
             self.events.write({
@@ -394,6 +444,13 @@ class Orchestrator:
         for sid in to_delete:
             del self._spec_nodes[sid]
         self._spec_edges = {(a, b) for (a, b) in self._spec_edges if a != str(parent_id)}
+
+    def _mk_budget_gid(self, parent: UUID | str, spec_name: str) -> str:
+        return f"ghost:budget:{parent}:{spec_name}"
+
+    def _count_real_children(self, parent: UUID, spec: str) -> int:
+        return sum(1 for t in self.plan.taskInstances.values()
+                if t.parent_id == parent and t.spec_name == spec)
 
 def _worker_entry(
         node_id: str, 

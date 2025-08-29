@@ -49,6 +49,38 @@ def scope_applies(scope: Scope, diff: PlanDiff) -> bool:
     return False
 
 # concrete constraints
+@dataclass(frozen=True, slots=True)
+class LimitedSpawns(Constraint):
+    """Limit the number of times the owner may spawn a specific child spec."""
+    target_spec: str
+    max_count: int
+
+    def __init__(self, target: Callable, max_count: int):
+        # Force callables (no strings)
+        if not callable(target):
+            raise TypeError("LimitedSpawns(target=...) must be a callable task function")
+        object.__setattr__(self, "target_spec", spec_name_from_callable(target))
+        object.__setattr__(self, "max_count", int(max_count))
+
+    def validate(self, plan: Plan, diff: PlanDiff) -> List[SimpleViolation]:
+        owner = diff.emitter_id
+        # count existing direct children of this owner with the target spec
+        existing = sum(
+            1 for t in plan.taskInstances.values()
+            if t.parent_id == owner and t.spec_name == self.target_spec
+        )
+        # count new children in this diff
+        new_count = sum(
+            1 for n in (diff.new_nodes or [])
+            if n.parent_id == owner and n.spec_name == self.target_spec
+        )
+        total = existing + new_count
+        if total > self.max_count:
+            return [SimpleViolation(
+                "LimitedSpawnsExceeded",
+                {"owner": str(owner), "spec": self.target_spec, "limit": self.max_count, "attempted": total}
+            )]
+        return []
 
 @dataclass(frozen=True, slots=True)
 class NoNewNodes(Constraint):
