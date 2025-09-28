@@ -13,27 +13,23 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from task_registry import task, _REGISTRY
 from execution_context import ExecutionContext
 from orchestrator import Orchestrator
-from promise import OnlySpecificEdgesAllowed, OnlySpecificNodesAllowed, MaxParallelism
+from promise import OnlySpecificEdgesAllowed, OnlySpecificNodesAllowed, MaxParallelism, LimitedSpawns
 
-
-@task
+@task(static=True)
 def square(ctx: ExecutionContext, n: int) -> int:
     ctx.log("square", n=n)
     time.sleep(0.05)
     return n * n
 
-
-@task
+@task(static=True)
 def cube(ctx: ExecutionContext, n: int) -> int:
     ctx.log("cube", n=n)
     time.sleep(0.05)
     return n * n * n
 
-
 @task
 def check_number(ctx: ExecutionContext, n: int) -> int:
     # promise that only {square, cube} can be created under this node and only
-
     ctx.promise(
         OnlySpecificNodesAllowed({square, cube}),
         OnlySpecificEdgesAllowed({(check_number, square), (check_number, cube)}),
@@ -53,6 +49,10 @@ def check_number(ctx: ExecutionContext, n: int) -> int:
 @task
 def square_batch(ctx: ExecutionContext, numbers: list[int]) -> int:
     # Cap concurrency across children labeled "numbers"
+    ctx.promise(
+        LimitedSpawns(check_number, max_count=len(numbers)),
+        MaxParallelism(label="squares", k=3),
+    )
 
     kids: list[Any] = []
     for n in numbers:
@@ -62,7 +62,6 @@ def square_batch(ctx: ExecutionContext, numbers: list[int]) -> int:
     total = sum(vals)
     ctx.log("sum", total=total, count=len(vals))
     return total
-
 
 if __name__ == "__main__":
     orc = Orchestrator(_REGISTRY, output_dir=Path("outputs/map_and_branch"))

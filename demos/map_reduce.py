@@ -15,7 +15,7 @@ from plan import From
 def square(ctx: ExecutionContext, item: int) -> int:
     ctx.log("square", n=item)
     # Tiny stagger so parallel runs are visible in the timeline
-    time.sleep(0.05)
+    time.sleep(0.1)
     return item * item
 
 # reduce: sum the squares
@@ -32,7 +32,7 @@ def square_batch(ctx: ExecutionContext, numbers: List[int]) -> int:
     # Also cap their parallelism via a label.
     ctx.promise(
         LimitedSpawns(square, max_count=len(numbers)),
-        MaxParallelism(label="squares", k=3),
+        MaxParallelism(label="squares", k=2),
     )
 
     # Fan out
@@ -50,7 +50,7 @@ def square_batch(ctx: ExecutionContext, numbers: List[int]) -> int:
 if __name__ == "__main__":
     outdir = Path("outputs/map_reduce")
     orc = Orchestrator(_REGISTRY, output_dir=outdir)
-    numbers = list(range(1, 10))  # 1..5
+    numbers = list(range(1, 7))  # 1..6
     root = orc.start(entry=square_batch, inputs={"numbers": numbers})
     orc.run_to_completion(root)
     print("Run complete → outputs/map_reduce (events.jsonl, dots/, pngs/)")

@@ -57,6 +57,7 @@ class Orchestrator:
         self._static_edges: set[tuple[str, str]] = set() # (from_id_or_static_id, to_id_or_static_id)
         
         self._spawn_budgets: dict[tuple[UUID, str], dict[str, int]] = {}
+        self._halted: bool = False
     
     def start(self, entry: Callable, inputs: dict[str, Any]) -> UUID:
         if not callable(entry):
@@ -223,6 +224,10 @@ class Orchestrator:
             except queue.Empty:
                 return
 
+            if self._halted:
+                # Discard any further control messages after a fatal violation
+                continue
+
             if kind == "plandiff":
                 self._handle_plandiff(payload)
             elif kind == "log":
@@ -302,6 +307,8 @@ class Orchestrator:
                     p = self._pool.get(tid)
                     if p and p.is_alive():
                         p.terminate()
+            # prevent further processing; ignore all subsequent plandiffs/logs/emits
+            self._halted = True
             self.export_dot()
             return
 
@@ -435,14 +442,19 @@ class Orchestrator:
                     self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != sid}
                     break
                                 
+        # Build an overlay for safe spec lookup (plan + nodes added in this diff)
+        overlay_specs = {nid: ti.spec_name for nid, ti in self.plan.taskInstances.items()}
+        overlay_specs.update({n.id: n.spec_name for n in diff.new_nodes})
         for new_edge in diff.new_edges:
             self.plan.edges.add(new_edge)
+            from_spec = overlay_specs.get(new_edge.from_id)
+            to_spec = overlay_specs.get(new_edge.to_id)
             self.events.write({
                 "type": "EdgeCreated",
                 "from": str(new_edge.from_id),
                 "to": str(new_edge.to_id),
-                "from_spec": self.plan.spec_of(new_edge.from_id),
-                "to_spec": self.plan.spec_of(new_edge.to_id),
+                "from_spec": from_spec,
+                "to_spec": to_spec,
             })
         self.export_dot()
 

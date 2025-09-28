@@ -1,0 +1,82 @@
+{"type": "NodeCreated", "id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "spec": "A", "ts": "2025-08-29T08:24:40.671013+00:00"}
+{"type": "WorkflowStarted", "wf_root": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "entry_spec": "A", "ts": "2025-08-29T08:24:40.672014+00:00"}
+{"type": "StaticSpecPreview", "parent": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "spec": "A", "preview_calls": ["b", "c", "d"], "preview_edges": [["b", "d"], ["c", "d"]], "ts": "2025-08-29T08:24:40.673011+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:b", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:c", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"], "static_edges": [["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:b", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"], ["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:c", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"]], "ts": "2025-08-29T08:24:40.675021+00:00"}
+{"type": "TaskStarted", "id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "spec": "A", "ts": "2025-08-29T08:24:41.236592+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:b", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:c", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"], "static_edges": [["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:b", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"], ["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:c", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"]], "ts": "2025-08-29T08:24:41.237593+00:00"}
+{"type": "NodeCreated", "id": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "spec": "b", "parent_id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "labels": [], "ts": "2025-08-29T08:24:42.029952+00:00"}
+{"type": "PromiseDeclared", "owner": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "scope": "OwnerDescendantsScope", "constraint": "NoNewNodes", "params": {}, "ts": "2025-08-29T08:24:42.030963+00:00"}
+{"type": "PromiseDeclared", "owner": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "scope": "OwnerDescendantsScope", "constraint": "NoNewEdges", "params": {}, "ts": "2025-08-29T08:24:42.031724+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:c", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"], "static_edges": [["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:c", "static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"]], "ts": "2025-08-29T08:24:42.032963+00:00"}
+{"type": "NodeCreated", "id": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "spec": "c", "parent_id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "labels": [], "ts": "2025-08-29T08:24:42.554070+00:00"}
+{"type": "PromiseDeclared", "owner": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "scope": "OwnerDescendantsScope", "constraint": "NoNewNodes", "params": {}, "ts": "2025-08-29T08:24:42.554070+00:00"}
+{"type": "PromiseDeclared", "owner": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "scope": "OwnerDescendantsScope", "constraint": "NoNewEdges", "params": {}, "ts": "2025-08-29T08:24:42.556602+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:9f553972-ef20-40d5-ab67-4fe2ec79463c:d"], "static_edges": [], "ts": "2025-08-29T08:24:42.557603+00:00"}
+{"type": "NodeCreated", "id": "9d345135-2e8e-4267-bec4-60073e15461c", "spec": "d", "parent_id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "labels": [], "ts": "2025-08-29T08:24:43.324321+00:00"}
+{"type": "PromiseDeclared", "owner": "9d345135-2e8e-4267-bec4-60073e15461c", "scope": "OwnerDescendantsScope", "constraint": "NoNewNodes", "params": {}, "ts": "2025-08-29T08:24:43.326324+00:00"}
+{"type": "PromiseDeclared", "owner": "9d345135-2e8e-4267-bec4-60073e15461c", "scope": "OwnerDescendantsScope", "constraint": "NoNewEdges", "params": {}, "ts": "2025-08-29T08:24:43.327322+00:00"}
+{"type": "EdgeCreated", "from": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "to": "9d345135-2e8e-4267-bec4-60073e15461c", "from_spec": "b", "to_spec": "d", "ts": "2025-08-29T08:24:43.329372+00:00"}
+{"type": "EdgeCreated", "from": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "to": "9d345135-2e8e-4267-bec4-60073e15461c", "from_spec": "c", "to_spec": "d", "ts": "2025-08-29T08:24:43.331112+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:43.332133+00:00"}
+{"type": "NodeCreated", "id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "spec": "E", "parent_id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "labels": [], "ts": "2025-08-29T08:24:44.095713+00:00"}
+{"type": "StaticSpecPreview", "parent": "36e1e95a-dd51-43ce-b792-6d67461349c8", "spec": "E", "preview_calls": ["b", "c", "d"], "preview_edges": [["b", "d"], ["c", "d"]], "ts": "2025-08-29T08:24:44.096103+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:44.097111+00:00"}
+{"type": "TaskStarted", "id": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "spec": "b", "ts": "2025-08-29T08:24:44.753790+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:44.754802+00:00"}
+{"type": "TaskStarted", "id": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "spec": "c", "ts": "2025-08-29T08:24:45.398829+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:45.401349+00:00"}
+{"type": "TaskStarted", "id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "spec": "E", "ts": "2025-08-29T08:24:46.239910+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:46.241610+00:00"}
+{"type": "TaskLog", "task_id": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "msg": "b:start", "x": 2, "ts": "2025-08-29T08:24:47.348974+00:00"}
+{"type": "TaskLog", "task_id": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "msg": "b:done", "out": 3, "ts": "2025-08-29T08:24:47.351497+00:00"}
+{"type": "TaskCompleted", "id": "a384029b-6554-4cab-ae4e-caec45aaa1ba", "spec": "b", "output": 3, "ts": "2025-08-29T08:24:47.354501+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:47.356671+00:00"}
+{"type": "TaskLog", "task_id": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "msg": "c:start", "y": 3, "ts": "2025-08-29T08:24:48.366579+00:00"}
+{"type": "TaskLog", "task_id": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "msg": "c:done", "out": 6, "ts": "2025-08-29T08:24:48.368582+00:00"}
+{"type": "TaskCompleted", "id": "a4561e2b-1ce9-46fd-94fc-0368fe82e965", "spec": "c", "output": 6, "ts": "2025-08-29T08:24:48.370581+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:b", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:48.371577+00:00"}
+{"type": "NodeCreated", "id": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "spec": "b", "parent_id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "labels": [], "ts": "2025-08-29T08:24:49.105295+00:00"}
+{"type": "PromiseDeclared", "owner": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "scope": "OwnerDescendantsScope", "constraint": "NoNewNodes", "params": {}, "ts": "2025-08-29T08:24:49.106792+00:00"}
+{"type": "PromiseDeclared", "owner": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "scope": "OwnerDescendantsScope", "constraint": "NoNewEdges", "params": {}, "ts": "2025-08-29T08:24:49.108803+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [["static:36e1e95a-dd51-43ce-b792-6d67461349c8:c", "static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"]], "ts": "2025-08-29T08:24:49.109807+00:00"}
+{"type": "NodeCreated", "id": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "spec": "c", "parent_id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "labels": [], "ts": "2025-08-29T08:24:49.929476+00:00"}
+{"type": "PromiseDeclared", "owner": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "scope": "OwnerDescendantsScope", "constraint": "NoNewNodes", "params": {}, "ts": "2025-08-29T08:24:49.932476+00:00"}
+{"type": "PromiseDeclared", "owner": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "scope": "OwnerDescendantsScope", "constraint": "NoNewEdges", "params": {}, "ts": "2025-08-29T08:24:49.934531+00:00"}
+{"type": "RenderInputs", "static_nodes": ["static:36e1e95a-dd51-43ce-b792-6d67461349c8:d"], "static_edges": [], "ts": "2025-08-29T08:24:49.935550+00:00"}
+{"type": "NodeCreated", "id": "6759724a-59d7-4d07-b819-76652cc426de", "spec": "d", "parent_id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "labels": [], "ts": "2025-08-29T08:24:50.665724+00:00"}
+{"type": "PromiseDeclared", "owner": "6759724a-59d7-4d07-b819-76652cc426de", "scope": "OwnerDescendantsScope", "constraint": "NoNewNodes", "params": {}, "ts": "2025-08-29T08:24:50.666722+00:00"}
+{"type": "PromiseDeclared", "owner": "6759724a-59d7-4d07-b819-76652cc426de", "scope": "OwnerDescendantsScope", "constraint": "NoNewEdges", "params": {}, "ts": "2025-08-29T08:24:50.669231+00:00"}
+{"type": "EdgeCreated", "from": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "to": "6759724a-59d7-4d07-b819-76652cc426de", "from_spec": "b", "to_spec": "d", "ts": "2025-08-29T08:24:50.670249+00:00"}
+{"type": "EdgeCreated", "from": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "to": "6759724a-59d7-4d07-b819-76652cc426de", "from_spec": "c", "to_spec": "d", "ts": "2025-08-29T08:24:50.672240+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:50.673239+00:00"}
+{"type": "TaskStarted", "id": "9d345135-2e8e-4267-bec4-60073e15461c", "spec": "d", "ts": "2025-08-29T08:24:51.438506+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:51.439514+00:00"}
+{"type": "TaskStarted", "id": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "spec": "b", "ts": "2025-08-29T08:24:52.156026+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:52.157534+00:00"}
+{"type": "TaskStarted", "id": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "spec": "c", "ts": "2025-08-29T08:24:52.892706+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:52.894212+00:00"}
+{"type": "TaskLog", "task_id": "9d345135-2e8e-4267-bec4-60073e15461c", "msg": "d:start", "b": 3, "c": 6, "ts": "2025-08-29T08:24:53.375537+00:00"}
+{"type": "TaskLog", "task_id": "9d345135-2e8e-4267-bec4-60073e15461c", "msg": "d:done", "out": 9, "ts": "2025-08-29T08:24:53.376619+00:00"}
+{"type": "TaskCompleted", "id": "9d345135-2e8e-4267-bec4-60073e15461c", "spec": "d", "output": 9, "ts": "2025-08-29T08:24:53.379619+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:53.380617+00:00"}
+{"type": "TaskLog", "task_id": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "msg": "b:start", "x": 12, "ts": "2025-08-29T08:24:54.118163+00:00"}
+{"type": "TaskLog", "task_id": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "msg": "b:done", "out": 13, "ts": "2025-08-29T08:24:54.118670+00:00"}
+{"type": "TaskCompleted", "id": "83b323f0-8dd3-44a3-a790-d5a5613b69bb", "spec": "b", "output": 13, "ts": "2025-08-29T08:24:54.120677+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:54.122681+00:00"}
+{"type": "TaskLog", "task_id": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "msg": "c:start", "y": 13, "ts": "2025-08-29T08:24:54.727311+00:00"}
+{"type": "TaskLog", "task_id": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "msg": "c:done", "out": 26, "ts": "2025-08-29T08:24:54.730375+00:00"}
+{"type": "TaskCompleted", "id": "6ebf0f7d-0800-4210-af75-5cb7fc128030", "spec": "c", "output": 26, "ts": "2025-08-29T08:24:54.732376+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:54.733376+00:00"}
+{"type": "TaskStarted", "id": "6759724a-59d7-4d07-b819-76652cc426de", "spec": "d", "ts": "2025-08-29T08:24:55.295296+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:55.297813+00:00"}
+{"type": "TaskLog", "task_id": "6759724a-59d7-4d07-b819-76652cc426de", "msg": "d:start", "b": 13, "c": 26, "ts": "2025-08-29T08:24:56.557616+00:00"}
+{"type": "TaskLog", "task_id": "6759724a-59d7-4d07-b819-76652cc426de", "msg": "d:done", "out": 39, "ts": "2025-08-29T08:24:56.560131+00:00"}
+{"type": "TaskCompleted", "id": "6759724a-59d7-4d07-b819-76652cc426de", "spec": "d", "output": 39, "ts": "2025-08-29T08:24:56.563131+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:56.565567+00:00"}
+{"type": "TaskLog", "task_id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "msg": "E:result", "result": 39, "ts": "2025-08-29T08:24:57.701224+00:00"}
+{"type": "TaskCompleted", "id": "36e1e95a-dd51-43ce-b792-6d67461349c8", "spec": "E", "output": 39, "ts": "2025-08-29T08:24:57.704218+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:57.705220+00:00"}
+{"type": "TaskLog", "task_id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "msg": "A:done", "a_out": 9, "e_out": 39, "total": 48, "ts": "2025-08-29T08:24:58.602526+00:00"}
+{"type": "TaskCompleted", "id": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "spec": "A", "output": 48, "ts": "2025-08-29T08:24:58.605516+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T08:24:58.607468+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "9f553972-ef20-40d5-ab67-4fe2ec79463c", "ts": "2025-08-29T08:24:59.583479+00:00"}

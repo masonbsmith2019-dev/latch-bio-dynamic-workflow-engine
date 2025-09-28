@@ -1,19 +1,13 @@
-# demos/dynamic_static_preview.py
 from __future__ import annotations
 import os, sys, time
 from pathlib import Path
 
-# Enable local imports when running the demo directly
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 from task_registry import task, _REGISTRY
 from execution_context import ExecutionContext
 from orchestrator import Orchestrator
 from promise import LimitedSpawns
 from plan import From
-
-
-# -------------------- Static tasks used by the entry --------------------
 
 @task(static=True)
 def static_prep(ctx: ExecutionContext, seed: int) -> int:
@@ -31,9 +25,6 @@ def static_validate(ctx: ExecutionContext, value: int) -> bool:
     ok = (value % 2 == 0)
     ctx.log("static_validate:done", ok=ok)
     return ok
-
-
-# -------------------- Static tasks used by each dynamic work unit --------------------
 
 @task(static=True)
 def post_a(ctx: ExecutionContext, v: int) -> int:

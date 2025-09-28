@@ -1,0 +1,13 @@
+{"type": "NodeCreated", "id": "8e6862c5-7eec-4cde-a51c-53700f728909", "spec": "branch_or_break", "ts": "2025-08-29T19:42:33.777866+00:00"}
+{"type": "WorkflowStarted", "wf_root": "8e6862c5-7eec-4cde-a51c-53700f728909", "entry_spec": "branch_or_break", "ts": "2025-08-29T19:42:33.793523+00:00"}
+{"type": "StaticSpecPreview", "parent": "8e6862c5-7eec-4cde-a51c-53700f728909", "spec": "branch_or_break", "preview_calls": [], "preview_edges": [], "ts": "2025-08-29T19:42:33.795089+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:42:33.795089+00:00"}
+{"type": "TaskStarted", "id": "8e6862c5-7eec-4cde-a51c-53700f728909", "spec": "branch_or_break", "ts": "2025-08-29T19:42:34.468518+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:42:34.468518+00:00"}
+{"type": "PromiseDeclared", "owner": "8e6862c5-7eec-4cde-a51c-53700f728909", "scope": "OwnerDescendantsScope", "constraint": "OnlySpecificNodesAllowed", "params": {"allowed_specs": ["cube", "square"]}, "ts": "2025-08-29T19:42:35.541697+00:00"}
+{"type": "PromiseDeclared", "owner": "8e6862c5-7eec-4cde-a51c-53700f728909", "scope": "OwnerDescendantsScope", "constraint": "OnlySpecificEdgesAllowed", "params": {"allowed_spec_pairs": [["branch_or_break", "cube"], ["branch_or_break", "square"]]}, "ts": "2025-08-29T19:42:35.542718+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:42:35.542718+00:00"}
+{"type": "TaskLog", "task_id": "8e6862c5-7eec-4cde-a51c-53700f728909", "msg": "deciding", "n": 5, "ts": "2025-08-29T19:42:36.205949+00:00"}
+{"type": "ConstraintViolation", "diff_emitter": "8e6862c5-7eec-4cde-a51c-53700f728909", "violations": [{"type": "OnlySpecificNodesAllowed", "details": {"bad_nodes": ["rogue"]}}], "ts": "2025-08-29T19:42:36.205949+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:42:36.205949+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "8e6862c5-7eec-4cde-a51c-53700f728909", "ts": "2025-08-29T19:42:36.865056+00:00"}

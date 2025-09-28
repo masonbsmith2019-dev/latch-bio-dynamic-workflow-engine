@@ -1,0 +1,67 @@
+{"type": "NodeCreated", "id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "spec": "square_batch", "ts": "2025-09-26T22:25:30.305369+00:00"}
+{"type": "WorkflowStarted", "wf_root": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "entry_spec": "square_batch", "ts": "2025-09-26T22:25:30.313135+00:00"}
+{"type": "StaticSpecPreview", "parent": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "spec": "square_batch", "preview_calls": [], "preview_edges": [], "ts": "2025-09-26T22:25:30.316688+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:25:30.319797+00:00"}
+{"type": "TaskStarted", "id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "spec": "square_batch", "ts": "2025-09-26T22:25:46.885951+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:25:46.891064+00:00"}
+{"type": "PromiseDeclared", "owner": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "scope": "OwnerDescendantsScope", "constraint": "LimitedSpawns", "params": {"target_spec": "square", "max_count": 6}, "ts": "2025-09-26T22:25:58.770183+00:00"}
+{"type": "PromiseDeclared", "owner": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "scope": "OwnerDescendantsScope", "constraint": "MaxParallelism", "params": {"label": "squares", "k": 2}, "ts": "2025-09-26T22:25:58.772269+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:25:58.776724+00:00"}
+{"type": "NodeCreated", "id": "2015a682-f050-4601-a5d7-9881f7b9dbad", "spec": "square", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": ["squares"], "ts": "2025-09-26T22:26:08.123563+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:08.126602+00:00"}
+{"type": "NodeCreated", "id": "054d4131-d2a9-4b9f-9d60-acbd146e0cd3", "spec": "square", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": ["squares"], "ts": "2025-09-26T22:26:11.743772+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:11.747290+00:00"}
+{"type": "NodeCreated", "id": "a735b609-3c71-4f80-a228-6fe68009fa19", "spec": "square", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": ["squares"], "ts": "2025-09-26T22:26:17.255883+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:17.265656+00:00"}
+{"type": "NodeCreated", "id": "92328712-4d89-4cde-8334-6757efea541b", "spec": "square", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": ["squares"], "ts": "2025-09-26T22:26:22.337237+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:22.340835+00:00"}
+{"type": "NodeCreated", "id": "e72c2eb5-17e0-4498-a482-0262a2f43b4f", "spec": "square", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": ["squares"], "ts": "2025-09-26T22:26:27.298190+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:27.301755+00:00"}
+{"type": "NodeCreated", "id": "4a92661e-9c4f-41b3-9c82-e9d7e3faa51e", "spec": "square", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": ["squares"], "ts": "2025-09-26T22:26:28.784048+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:28.786684+00:00"}
+{"type": "NodeCreated", "id": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "spec": "sum_reduce", "parent_id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "labels": [], "ts": "2025-09-26T22:26:31.997949+00:00"}
+{"type": "EdgeCreated", "from": "2015a682-f050-4601-a5d7-9881f7b9dbad", "to": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "from_spec": "square", "to_spec": "sum_reduce", "ts": "2025-09-26T22:26:32.000966+00:00"}
+{"type": "EdgeCreated", "from": "a735b609-3c71-4f80-a228-6fe68009fa19", "to": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "from_spec": "square", "to_spec": "sum_reduce", "ts": "2025-09-26T22:26:32.004654+00:00"}
+{"type": "EdgeCreated", "from": "e72c2eb5-17e0-4498-a482-0262a2f43b4f", "to": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "from_spec": "square", "to_spec": "sum_reduce", "ts": "2025-09-26T22:26:32.009722+00:00"}
+{"type": "EdgeCreated", "from": "4a92661e-9c4f-41b3-9c82-e9d7e3faa51e", "to": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "from_spec": "square", "to_spec": "sum_reduce", "ts": "2025-09-26T22:26:32.013367+00:00"}
+{"type": "EdgeCreated", "from": "054d4131-d2a9-4b9f-9d60-acbd146e0cd3", "to": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "from_spec": "square", "to_spec": "sum_reduce", "ts": "2025-09-26T22:26:32.018080+00:00"}
+{"type": "EdgeCreated", "from": "92328712-4d89-4cde-8334-6757efea541b", "to": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "from_spec": "square", "to_spec": "sum_reduce", "ts": "2025-09-26T22:26:32.024168+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:32.027274+00:00"}
+{"type": "TaskStarted", "id": "2015a682-f050-4601-a5d7-9881f7b9dbad", "spec": "square", "ts": "2025-09-26T22:26:35.121985+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:35.125019+00:00"}
+{"type": "TaskStarted", "id": "054d4131-d2a9-4b9f-9d60-acbd146e0cd3", "spec": "square", "ts": "2025-09-26T22:26:39.243898+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:39.247872+00:00"}
+{"type": "TaskLog", "task_id": "2015a682-f050-4601-a5d7-9881f7b9dbad", "msg": "square", "n": 1, "ts": "2025-09-26T22:26:42.357374+00:00"}
+{"type": "TaskCompleted", "id": "2015a682-f050-4601-a5d7-9881f7b9dbad", "spec": "square", "output": 1, "ts": "2025-09-26T22:26:42.362534+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:42.365549+00:00"}
+{"type": "TaskLog", "task_id": "054d4131-d2a9-4b9f-9d60-acbd146e0cd3", "msg": "square", "n": 2, "ts": "2025-09-26T22:26:45.745892+00:00"}
+{"type": "TaskCompleted", "id": "054d4131-d2a9-4b9f-9d60-acbd146e0cd3", "spec": "square", "output": 4, "ts": "2025-09-26T22:26:45.751943+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:45.755475+00:00"}
+{"type": "TaskStarted", "id": "a735b609-3c71-4f80-a228-6fe68009fa19", "spec": "square", "ts": "2025-09-26T22:26:48.775248+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:26:48.781043+00:00"}
+{"type": "TaskStarted", "id": "92328712-4d89-4cde-8334-6757efea541b", "spec": "square", "ts": "2025-09-26T22:27:00.537765+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:00.551781+00:00"}
+{"type": "TaskLog", "task_id": "a735b609-3c71-4f80-a228-6fe68009fa19", "msg": "square", "n": 3, "ts": "2025-09-26T22:27:09.085742+00:00"}
+{"type": "TaskCompleted", "id": "a735b609-3c71-4f80-a228-6fe68009fa19", "spec": "square", "output": 9, "ts": "2025-09-26T22:27:09.091848+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:09.095773+00:00"}
+{"type": "TaskLog", "task_id": "92328712-4d89-4cde-8334-6757efea541b", "msg": "square", "n": 4, "ts": "2025-09-26T22:27:12.766546+00:00"}
+{"type": "TaskCompleted", "id": "92328712-4d89-4cde-8334-6757efea541b", "spec": "square", "output": 16, "ts": "2025-09-26T22:27:12.770697+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:12.775121+00:00"}
+{"type": "TaskStarted", "id": "e72c2eb5-17e0-4498-a482-0262a2f43b4f", "spec": "square", "ts": "2025-09-26T22:27:17.342273+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:17.345832+00:00"}
+{"type": "TaskStarted", "id": "4a92661e-9c4f-41b3-9c82-e9d7e3faa51e", "spec": "square", "ts": "2025-09-26T22:27:23.832320+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:23.836913+00:00"}
+{"type": "TaskLog", "task_id": "e72c2eb5-17e0-4498-a482-0262a2f43b4f", "msg": "square", "n": 5, "ts": "2025-09-26T22:27:28.485447+00:00"}
+{"type": "TaskCompleted", "id": "e72c2eb5-17e0-4498-a482-0262a2f43b4f", "spec": "square", "output": 25, "ts": "2025-09-26T22:27:28.490068+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:28.493711+00:00"}
+{"type": "TaskLog", "task_id": "4a92661e-9c4f-41b3-9c82-e9d7e3faa51e", "msg": "square", "n": 6, "ts": "2025-09-26T22:27:30.055260+00:00"}
+{"type": "TaskCompleted", "id": "4a92661e-9c4f-41b3-9c82-e9d7e3faa51e", "spec": "square", "output": 36, "ts": "2025-09-26T22:27:30.063548+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:30.068603+00:00"}
+{"type": "TaskStarted", "id": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "spec": "sum_reduce", "ts": "2025-09-26T22:27:36.530397+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:36.534026+00:00"}
+{"type": "TaskLog", "task_id": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "msg": "sum", "total": 91, "count": 6, "ts": "2025-09-26T22:27:48.429077+00:00"}
+{"type": "TaskCompleted", "id": "2e16c132-4ac6-46b5-b09e-7d564bca18af", "spec": "sum_reduce", "output": 91, "ts": "2025-09-26T22:27:48.436875+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:48.442028+00:00"}
+{"type": "TaskCompleted", "id": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "spec": "square_batch", "output": 91, "ts": "2025-09-26T22:27:56.356841+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-26T22:27:56.360908+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "f0023f0f-73f6-4dd7-b71b-68e171078a6f", "ts": "2025-09-26T22:28:04.662929+00:00"}

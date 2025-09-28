@@ -1,0 +1,16 @@
+{"type": "NodeCreated", "id": "1c267eb1-f4c9-413b-987a-4ad113a17504", "spec": "fork_join", "ts": "2025-08-29T03:04:08.676705+00:00"}
+{"type": "WorkflowStarted", "wf_root": "1c267eb1-f4c9-413b-987a-4ad113a17504", "entry_spec": "fork_join", "ts": "2025-08-29T03:04:08.678705+00:00"}
+{"type": "TaskStarted", "id": "1c267eb1-f4c9-413b-987a-4ad113a17504", "spec": "fork_join", "ts": "2025-08-29T03:04:09.495997+00:00"}
+{"type": "NodeCreated", "id": "a0feb0cd-a755-4d26-bff1-f67ddcf817fb", "spec": "add", "parent_id": "1c267eb1-f4c9-413b-987a-4ad113a17504", "labels": [], "ts": "2025-08-29T03:04:10.405201+00:00"}
+{"type": "NodeCreated", "id": "e7def033-79a9-449d-a0a1-fe8b9490d7de", "spec": "mul", "parent_id": "1c267eb1-f4c9-413b-987a-4ad113a17504", "labels": [], "ts": "2025-08-29T03:04:11.208992+00:00"}
+{"type": "NodeCreated", "id": "8cd1750b-4c70-4331-8a1e-8f7b32254da7", "spec": "combine", "parent_id": "1c267eb1-f4c9-413b-987a-4ad113a17504", "labels": [], "ts": "2025-08-29T03:04:11.648378+00:00"}
+{"type": "EdgeCreated", "from": "a0feb0cd-a755-4d26-bff1-f67ddcf817fb", "to": "8cd1750b-4c70-4331-8a1e-8f7b32254da7", "from_spec": "add", "to_spec": "combine", "ts": "2025-08-29T03:04:11.649380+00:00"}
+{"type": "EdgeCreated", "from": "e7def033-79a9-449d-a0a1-fe8b9490d7de", "to": "8cd1750b-4c70-4331-8a1e-8f7b32254da7", "from_spec": "mul", "to_spec": "combine", "ts": "2025-08-29T03:04:11.650378+00:00"}
+{"type": "TaskStarted", "id": "a0feb0cd-a755-4d26-bff1-f67ddcf817fb", "spec": "add", "ts": "2025-08-29T03:04:12.229623+00:00"}
+{"type": "TaskStarted", "id": "e7def033-79a9-449d-a0a1-fe8b9490d7de", "spec": "mul", "ts": "2025-08-29T03:04:13.019854+00:00"}
+{"type": "TaskCompleted", "id": "a0feb0cd-a755-4d26-bff1-f67ddcf817fb", "spec": "add", "output": 5, "ts": "2025-08-29T03:04:14.080821+00:00"}
+{"type": "TaskCompleted", "id": "e7def033-79a9-449d-a0a1-fe8b9490d7de", "spec": "mul", "output": 6, "ts": "2025-08-29T03:04:14.945230+00:00"}
+{"type": "TaskStarted", "id": "8cd1750b-4c70-4331-8a1e-8f7b32254da7", "spec": "combine", "ts": "2025-08-29T03:04:15.697203+00:00"}
+{"type": "TaskCompleted", "id": "8cd1750b-4c70-4331-8a1e-8f7b32254da7", "spec": "combine", "output": 11, "ts": "2025-08-29T03:04:16.601417+00:00"}
+{"type": "TaskCompleted", "id": "1c267eb1-f4c9-413b-987a-4ad113a17504", "spec": "fork_join", "output": 11, "ts": "2025-08-29T03:04:16.996085+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "1c267eb1-f4c9-413b-987a-4ad113a17504", "ts": "2025-08-29T03:04:17.625099+00:00"}

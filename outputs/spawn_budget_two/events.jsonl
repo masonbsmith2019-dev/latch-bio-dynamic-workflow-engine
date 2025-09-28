@@ -1,0 +1,20 @@
+{"type": "NodeCreated", "id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "spec": "fan_out_two_budgets", "ts": "2025-08-29T03:06:39.774876+00:00"}
+{"type": "WorkflowStarted", "wf_root": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "entry_spec": "fan_out_two_budgets", "ts": "2025-08-29T03:06:39.775877+00:00"}
+{"type": "TaskStarted", "id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "spec": "fan_out_two_budgets", "ts": "2025-08-29T03:06:40.376388+00:00"}
+{"type": "PromiseDeclared", "owner": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "scope": "OwnerDescendantsScope", "constraint": "LimitedSpawns", "params": {"target_spec": "worker_a", "max_count": 3}, "ts": "2025-08-29T03:06:41.278760+00:00"}
+{"type": "PromiseDeclared", "owner": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "scope": "OwnerDescendantsScope", "constraint": "LimitedSpawns", "params": {"target_spec": "worker_b", "max_count": 2}, "ts": "2025-08-29T03:06:41.280766+00:00"}
+{"type": "NodeCreated", "id": "0d7c8302-8bf0-442e-94de-7f2c346cc80c", "spec": "worker_a", "parent_id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "labels": [], "ts": "2025-08-29T03:06:41.908206+00:00"}
+{"type": "NodeCreated", "id": "38b55910-a806-4033-9384-6205a4d61184", "spec": "worker_a", "parent_id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "labels": [], "ts": "2025-08-29T03:06:42.535013+00:00"}
+{"type": "NodeCreated", "id": "0a60235e-8f4d-4bb4-aae3-d5f65302f560", "spec": "worker_b", "parent_id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "labels": [], "ts": "2025-08-29T03:06:43.065668+00:00"}
+{"type": "NodeCreated", "id": "594d1684-ccef-4a20-9164-7488eec85ca5", "spec": "worker_b", "parent_id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "labels": [], "ts": "2025-08-29T03:06:43.914951+00:00"}
+{"type": "TaskStarted", "id": "0d7c8302-8bf0-442e-94de-7f2c346cc80c", "spec": "worker_a", "ts": "2025-08-29T03:06:44.763588+00:00"}
+{"type": "TaskStarted", "id": "38b55910-a806-4033-9384-6205a4d61184", "spec": "worker_a", "ts": "2025-08-29T03:06:45.523344+00:00"}
+{"type": "TaskStarted", "id": "0a60235e-8f4d-4bb4-aae3-d5f65302f560", "spec": "worker_b", "ts": "2025-08-29T03:06:46.294310+00:00"}
+{"type": "TaskStarted", "id": "594d1684-ccef-4a20-9164-7488eec85ca5", "spec": "worker_b", "ts": "2025-08-29T03:06:47.065441+00:00"}
+{"type": "TaskCompleted", "id": "0d7c8302-8bf0-442e-94de-7f2c346cc80c", "spec": "worker_a", "output": 0, "ts": "2025-08-29T03:06:47.836667+00:00"}
+{"type": "TaskCompleted", "id": "38b55910-a806-4033-9384-6205a4d61184", "spec": "worker_a", "output": 1, "ts": "2025-08-29T03:06:48.577005+00:00"}
+{"type": "TaskCompleted", "id": "0a60235e-8f4d-4bb4-aae3-d5f65302f560", "spec": "worker_b", "output": 0, "ts": "2025-08-29T03:06:49.325540+00:00"}
+{"type": "TaskCompleted", "id": "594d1684-ccef-4a20-9164-7488eec85ca5", "spec": "worker_b", "output": 10, "ts": "2025-08-29T03:06:49.733861+00:00"}
+{"type": "TaskLog", "task_id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "msg": "total", "total": 11, "count": 4, "ka": 2, "kb": 2, "ts": "2025-08-29T03:06:50.414014+00:00"}
+{"type": "TaskCompleted", "id": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "spec": "fan_out_two_budgets", "output": {"total": 11, "ka": 2, "kb": 2}, "ts": "2025-08-29T03:06:50.416494+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "cc5a3eb7-9dfb-4665-a356-28bab6d5ed04", "ts": "2025-08-29T03:06:51.098279+00:00"}

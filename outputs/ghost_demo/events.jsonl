@@ -1,0 +1,28 @@
+{"type": "NodeCreated", "id": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "spec": "analyze_numbers", "ts": "2025-08-29T19:17:58.860774+00:00"}
+{"type": "WorkflowStarted", "wf_root": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "entry_spec": "analyze_numbers", "ts": "2025-08-29T19:17:58.860774+00:00"}
+{"type": "StaticSpecPreview", "parent": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "spec": "analyze_numbers", "preview_calls": [], "preview_edges": [], "ts": "2025-08-29T19:17:58.867003+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:17:58.868610+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:17:59.574142+00:00"}
+{"type": "TaskStarted", "id": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "spec": "analyze_numbers", "ts": "2025-08-29T19:17:59.924743+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:17:59.924743+00:00"}
+{"type": "PromiseDeclared", "owner": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "scope": "OwnerDescendantsScope", "constraint": "OnlySpecificNodesAllowed", "params": {"allowed_specs": ["final_report", "max_all", "sum_all"]}, "ts": "2025-08-29T19:18:00.917429+00:00"}
+{"type": "PromiseDeclared", "owner": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "scope": "OwnerDescendantsScope", "constraint": "OnlySpecificEdgesAllowed", "params": {"allowed_spec_pairs": [["analyze_numbers", "sum_all"], ["analyze_numbers", "max_all"], ["sum_all", "final_report"]]}, "ts": "2025-08-29T19:18:00.917429+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:00.919447+00:00"}
+{"type": "NodeCreated", "id": "b4910772-af2c-4f5f-b44b-3dae6999cb9b", "spec": "sum_all", "parent_id": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "labels": [], "ts": "2025-08-29T19:18:01.741623+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:01.741623+00:00"}
+{"type": "NodeCreated", "id": "8bd3f61d-4e27-4928-b977-7a287bee761c", "spec": "final_report", "parent_id": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "labels": [], "ts": "2025-08-29T19:18:02.462958+00:00"}
+{"type": "EdgeCreated", "from": "b4910772-af2c-4f5f-b44b-3dae6999cb9b", "to": "8bd3f61d-4e27-4928-b977-7a287bee761c", "from_spec": "sum_all", "to_spec": "final_report", "ts": "2025-08-29T19:18:02.464531+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:02.465675+00:00"}
+{"type": "TaskStarted", "id": "b4910772-af2c-4f5f-b44b-3dae6999cb9b", "spec": "sum_all", "ts": "2025-08-29T19:18:03.153057+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:03.153057+00:00"}
+{"type": "TaskLog", "task_id": "b4910772-af2c-4f5f-b44b-3dae6999cb9b", "msg": "sum_all", "total": 14, "count": 5, "ts": "2025-08-29T19:18:04.134315+00:00"}
+{"type": "TaskCompleted", "id": "b4910772-af2c-4f5f-b44b-3dae6999cb9b", "spec": "sum_all", "output": 14, "ts": "2025-08-29T19:18:04.134315+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:04.134315+00:00"}
+{"type": "TaskStarted", "id": "8bd3f61d-4e27-4928-b977-7a287bee761c", "spec": "final_report", "ts": "2025-08-29T19:18:04.796271+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:04.796271+00:00"}
+{"type": "TaskLog", "task_id": "8bd3f61d-4e27-4928-b977-7a287bee761c", "msg": "final_report", "report": "Report: sum=14, max=N/A", "ts": "2025-08-29T19:18:05.587952+00:00"}
+{"type": "TaskCompleted", "id": "8bd3f61d-4e27-4928-b977-7a287bee761c", "spec": "final_report", "output": "Report: sum=14, max=N/A", "ts": "2025-08-29T19:18:05.589701+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:05.589701+00:00"}
+{"type": "TaskCompleted", "id": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "spec": "analyze_numbers", "output": "Report: sum=14, max=N/A", "ts": "2025-08-29T19:18:06.279544+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-08-29T19:18:06.280548+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "84d5b03a-e23b-4477-9cba-2c1cfedabb31", "ts": "2025-08-29T19:18:07.081254+00:00"}

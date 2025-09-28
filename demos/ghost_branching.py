@@ -13,9 +13,8 @@ from task_registry import task, _REGISTRY
 from execution_context import ExecutionContext
 from orchestrator import Orchestrator
 from plan import From
+from promise import OnlySpecificNodesAllowed, OnlySpecificEdgesAllowed
 
-
-# --- Real tasks --------------------------------------------------------------
 
 @task
 def sum_all(ctx: ExecutionContext, nums: list[int]) -> int:
@@ -37,11 +36,15 @@ def final_report(ctx: ExecutionContext, sum_value: int, max_value: int | None = 
     ctx.log("final_report", report=msg)
     return msg
 
-
 # --- Workflow (entry). We *preview* expected children via calls=[...].
 # We intentionally skip spawning `max_all` at runtime to leave its ghost.
-@task(calls=[sum_all, max_all, final_report])
+@task()
 def analyze_numbers(ctx: ExecutionContext, numbers: list[int], want_max: bool = False) -> str:
+    ctx.promise(
+        OnlySpecificNodesAllowed({sum_all, max_all, final_report}),
+        OnlySpecificEdgesAllowed({(analyze_numbers, sum_all), (analyze_numbers, max_all), (sum_all, final_report)}),
+    )
+    
     # Spawn sum
     sum_id = ctx.spawn(sum_all, inputs={"nums": numbers})
 

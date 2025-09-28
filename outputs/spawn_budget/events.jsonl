@@ -1,0 +1,7 @@
+{"type": "NodeCreated", "id": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "spec": "fan_out_with_budget", "ts": "2025-08-29T02:34:03.926352+00:00"}
+{"type": "WorkflowStarted", "wf_root": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "entry_spec": "fan_out_with_budget", "ts": "2025-08-29T02:34:03.928352+00:00"}
+{"type": "TaskStarted", "id": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "spec": "fan_out_with_budget", "ts": "2025-08-29T02:34:04.634148+00:00"}
+{"type": "PromiseDeclared", "owner": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "scope": "OwnerDescendantsScope", "constraint": "LimitedSpawns", "params": {"target_spec": "worker", "max_count": 5}, "ts": "2025-08-29T02:34:05.358895+00:00"}
+{"type": "TaskLog", "task_id": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "msg": "total", "total": 0, "spawned": 0, "ts": "2025-08-29T02:34:05.872016+00:00"}
+{"type": "TaskCompleted", "id": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "spec": "fan_out_with_budget", "output": 0, "ts": "2025-08-29T02:34:05.873016+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "8dd0fe88-00f0-42b3-bf7c-b30a2c2f71b9", "ts": "2025-08-29T02:34:06.345948+00:00"}
