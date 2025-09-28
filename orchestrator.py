@@ -435,9 +435,13 @@ class Orchestrator:
                     del self._static_nodes[sid]
                     self._static_edges = {(a, b) for (a, b) in self._static_edges if a != sid and b != sid}
 
-            # clear matching ghost
+            # clear matching non-budget ghost (keep budget placeholders visible)
             for sid, meta in list(self._spec_nodes.items()):
-                if meta.get("parent") == n.parent_id and meta.get("spec") == n.spec_name:
+                if (
+                    meta.get("parent") == n.parent_id
+                    and meta.get("spec") == n.spec_name
+                    and meta.get("source") != "budget"
+                ):
                     del self._spec_nodes[sid]
                     self._spec_edges = {(a, b) for (a, b) in self._spec_edges if b != sid}
                     break

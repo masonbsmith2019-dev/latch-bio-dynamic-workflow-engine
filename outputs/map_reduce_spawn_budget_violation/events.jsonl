@@ -1,22 +1,22 @@
-{"type": "NodeCreated", "id": "42b05888-cd33-42db-85d4-97378107fb73", "spec": "square_batch", "ts": "2025-09-28T08:39:30.696190+00:00"}
-{"type": "WorkflowStarted", "wf_root": "42b05888-cd33-42db-85d4-97378107fb73", "entry_spec": "square_batch", "ts": "2025-09-28T08:39:30.698602+00:00"}
-{"type": "StaticSpecPreview", "parent": "42b05888-cd33-42db-85d4-97378107fb73", "spec": "square_batch", "preview_calls": [], "preview_edges": [], "ts": "2025-09-28T08:39:30.700615+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:30.703141+00:00"}
-{"type": "TaskStarted", "id": "42b05888-cd33-42db-85d4-97378107fb73", "spec": "square_batch", "ts": "2025-09-28T08:39:33.046338+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:33.048860+00:00"}
-{"type": "PromiseDeclared", "owner": "42b05888-cd33-42db-85d4-97378107fb73", "scope": "OwnerDescendantsScope", "constraint": "LimitedSpawns", "params": {"target_spec": "square", "max_count": 5}, "ts": "2025-09-28T08:39:35.826881+00:00"}
-{"type": "PromiseDeclared", "owner": "42b05888-cd33-42db-85d4-97378107fb73", "scope": "OwnerDescendantsScope", "constraint": "MaxParallelism", "params": {"label": "squares", "k": 2}, "ts": "2025-09-28T08:39:35.828894+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:35.831889+00:00"}
-{"type": "NodeCreated", "id": "05bb785b-7fa7-4f9b-b47c-82bf8f56a15f", "spec": "square", "parent_id": "42b05888-cd33-42db-85d4-97378107fb73", "labels": ["squares"], "ts": "2025-09-28T08:39:37.444919+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:37.446926+00:00"}
-{"type": "NodeCreated", "id": "827e15bf-527a-4221-b7aa-10a3021c4041", "spec": "square", "parent_id": "42b05888-cd33-42db-85d4-97378107fb73", "labels": ["squares"], "ts": "2025-09-28T08:39:39.797162+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:39.800264+00:00"}
-{"type": "NodeCreated", "id": "704eefbc-b84a-46ef-83c4-8e91428fe22d", "spec": "square", "parent_id": "42b05888-cd33-42db-85d4-97378107fb73", "labels": ["squares"], "ts": "2025-09-28T08:39:41.597794+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:41.600321+00:00"}
-{"type": "NodeCreated", "id": "d6a3dd2d-403f-4356-b030-9c556bdb82cc", "spec": "square", "parent_id": "42b05888-cd33-42db-85d4-97378107fb73", "labels": ["squares"], "ts": "2025-09-28T08:39:43.043063+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:43.045088+00:00"}
-{"type": "NodeCreated", "id": "8c13908b-942a-46ac-affb-ac802e5ea7ff", "spec": "square", "parent_id": "42b05888-cd33-42db-85d4-97378107fb73", "labels": ["squares"], "ts": "2025-09-28T08:39:44.206089+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:44.210139+00:00"}
-{"type": "ConstraintViolation", "diff_emitter": "42b05888-cd33-42db-85d4-97378107fb73", "violations": [{"type": "LimitedSpawnsExceeded", "details": {"owner": "42b05888-cd33-42db-85d4-97378107fb73", "spec": "square", "limit": 5, "attempted": 6}}], "ts": "2025-09-28T08:39:45.724658+00:00"}
-{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:39:45.730197+00:00"}
-{"type": "WorkflowCompleted", "wf_root": "42b05888-cd33-42db-85d4-97378107fb73", "ts": "2025-09-28T08:39:47.698909+00:00"}
+{"type": "NodeCreated", "id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "spec": "square_batch", "ts": "2025-09-28T08:51:38.952846+00:00"}
+{"type": "WorkflowStarted", "wf_root": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "entry_spec": "square_batch", "ts": "2025-09-28T08:51:38.956355+00:00"}
+{"type": "StaticSpecPreview", "parent": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "spec": "square_batch", "preview_calls": [], "preview_edges": [], "ts": "2025-09-28T08:51:38.957868+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:38.959875+00:00"}
+{"type": "TaskStarted", "id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "spec": "square_batch", "ts": "2025-09-28T08:51:40.814889+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:40.818399+00:00"}
+{"type": "PromiseDeclared", "owner": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "scope": "OwnerDescendantsScope", "constraint": "LimitedSpawns", "params": {"target_spec": "square", "max_count": 5}, "ts": "2025-09-28T08:51:43.186027+00:00"}
+{"type": "PromiseDeclared", "owner": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "scope": "OwnerDescendantsScope", "constraint": "MaxParallelism", "params": {"label": "squares", "k": 2}, "ts": "2025-09-28T08:51:43.188055+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:43.190565+00:00"}
+{"type": "NodeCreated", "id": "d1ab29e9-1b59-47c7-9dcc-7ef4b9ff8157", "spec": "square", "parent_id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "labels": ["squares"], "ts": "2025-09-28T08:51:44.837005+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:44.840030+00:00"}
+{"type": "NodeCreated", "id": "3cb36824-c30c-4e19-932e-71162905b6c6", "spec": "square", "parent_id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "labels": ["squares"], "ts": "2025-09-28T08:51:46.424403+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:46.428071+00:00"}
+{"type": "NodeCreated", "id": "b0aba700-3225-4b7a-9381-d768a3e3f349", "spec": "square", "parent_id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "labels": ["squares"], "ts": "2025-09-28T08:51:48.045201+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:48.047211+00:00"}
+{"type": "NodeCreated", "id": "a4bcec88-5845-454c-9088-2e613853292c", "spec": "square", "parent_id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "labels": ["squares"], "ts": "2025-09-28T08:51:49.917424+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:49.919645+00:00"}
+{"type": "NodeCreated", "id": "cfbe5347-bcb6-4c67-8c33-694021fd0c95", "spec": "square", "parent_id": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "labels": ["squares"], "ts": "2025-09-28T08:51:52.314767+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:52.315779+00:00"}
+{"type": "ConstraintViolation", "diff_emitter": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "violations": [{"type": "LimitedSpawnsExceeded", "details": {"owner": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "spec": "square", "limit": 5, "attempted": 6}}], "ts": "2025-09-28T08:51:53.791082+00:00"}
+{"type": "RenderInputs", "static_nodes": [], "static_edges": [], "ts": "2025-09-28T08:51:53.795620+00:00"}
+{"type": "WorkflowCompleted", "wf_root": "c159974a-7bfd-4ec1-ace8-8ee8b2765a69", "ts": "2025-09-28T08:51:55.340264+00:00"}
