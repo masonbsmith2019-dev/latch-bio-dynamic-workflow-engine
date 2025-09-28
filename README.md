@@ -61,10 +61,10 @@ The engine renders the evolving plan to **Graphviz** (DOT → PNG) and logs ever
 
 * `demos/dynamic_static_preview.py` — entry task declares static children; dynamic children preview their own static subgraphs; shows budget “ghosts” via `LimitedSpawns`. 
 * `demos/map_reduce.py` — fan-out squares via `spawn(...)`, then a reduce node with real data edges; demonstrates `LimitedSpawns` + `MaxParallelism`. 
-* `demos/multi_branching.py` — branching with whitelisted shapes using `OnlySpecificNodesAllowed` and `OnlySpecificEdgesAllowed`. 
-
-Other demos (may be in-progress or intentionally broken to illustrate failure modes):
-`map_reduce_spawn_violation.py`, `static_preview.py`, `branch_violation.py`.
+* `demos/map_reduce_spawn_violation.py` — like map-reduce but intentionally exceeds a spawn budget to demonstrate constraint violations.
+* `demos/static_preview.py` — entry task declares static children and dependencies via `calls` + `edges` so you see the sub-DAG immediately at registration. 
+* `demos/multi_branching.py` — multiple branches with previews/whitelisting via `OnlySpecificNodesAllowed` and `OnlySpecificEdgesAllowed`. 
+* `demos/branch_violation.py` — intentionally illegal edges/nodes to show promise validation in action. 
 
 ---
 
